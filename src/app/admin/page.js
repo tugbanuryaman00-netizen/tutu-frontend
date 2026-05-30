@@ -114,9 +114,9 @@ export default function AdminPanel() {
 
   // ANA YÖNETİM PANELİ (Giriş Yapıldıysa)
   return (
-    <div className="min-h-screen bg-neutral-50 flex">
+<div className="min-h-screen bg-neutral-50 flex flex-col md:flex-row">
       {/* Sol Menü */}
-      <div className="w-64 bg-neutral-900 text-white flex flex-col">
+<div className="w-full md:w-64 md:min-h-screen bg-neutral-900 text-white flex flex-col">
         <div className="p-6 border-b border-neutral-800">
           <h1 className="text-2xl font-extrabold tracking-tighter">TUTU<span className="text-pink-500">.</span> YÖNETİM</h1>
         </div>
@@ -134,11 +134,11 @@ export default function AdminPanel() {
       </div>
 
       {/* Ana İçerik */}
-      <div className="flex-1 p-10 overflow-y-auto">
+<div className="flex-1 p-4 md:p-10 overflow-y-auto">
         
         {/* SEKME 1: YENİ ÜRÜN EKLE */}
         {activeTab === 'add' && (
-          <div className="max-w-2xl bg-white p-8 rounded-xl shadow-sm border border-neutral-100">
+          <div className="max-w-2xl bg-white p-5 md:p-8 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold text-neutral-800 mb-6">Yeni Ürün Ekle</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -151,7 +151,7 @@ export default function AdminPanel() {
     className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500" 
     placeholder="Örn: https://resim-sitesi.com/elbise.jpg" />
 </div>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-neutral-600 mb-2">Fiyat (TL) *</label>
                   <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500" placeholder="Örn: 850" />
@@ -165,7 +165,7 @@ export default function AdminPanel() {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-neutral-600 mb-2">Etiket (İsteğe Bağlı)</label>
                   <input type="text" name="tag" value={formData.tag} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500" placeholder="Örn: %20 İNDİRİM" />
@@ -185,7 +185,7 @@ export default function AdminPanel() {
 
         {/* SEKME 2: ÜRÜN LİSTESİ */}
         {activeTab === 'list' && (
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-neutral-100">
+          <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold text-neutral-800 mb-6">Mevcut Ürünleriniz</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -224,7 +224,7 @@ export default function AdminPanel() {
 
         {/* SEKME 3: SİPARİŞLER */}
         {activeTab === 'orders' && (
-          <div className="bg-white p-8 rounded-xl shadow-sm border border-neutral-100 flex flex-col items-center justify-center py-20 text-center">
+          <div className="bg-white p-5 md:p-8 rounded-xl shadow-sm border border-neutral-100 flex flex-col items-center justify-center py-10 md:py-20 text-center">
             <div className="text-6xl mb-4">💳</div>
             <h2 className="text-2xl font-bold text-neutral-800 mb-2">Sipariş Modülü Hazırlanıyor</h2>
             <p className="text-neutral-500 max-w-md">
