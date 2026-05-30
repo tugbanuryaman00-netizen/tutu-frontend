@@ -25,7 +25,7 @@ export default function AdminPanel() {
   // Ürünleri Backend'den Çekme (Ürün Listesi sekmesi için)
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/products');
+      const response = await fetch('https://tutu-backend-api.onrender.com/api/products');
       const data = await response.json();
       if (data.success) setProductList(data.data);
     } catch (error) {
@@ -37,7 +37,7 @@ export default function AdminPanel() {
   if (!confirm("Bu ürünü silmek istediğinize emin misiniz?")) return;
   
   try {
-    const response = await fetch(`http://localhost:5000/api/products/${id}`, {
+    const response = await fetch(`https://tutu-backend-api.onrender.com/api/products/${id}`, {
       method: 'DELETE'
     });
     const data = await response.json();
@@ -70,7 +70,7 @@ export default function AdminPanel() {
     e.preventDefault();
     setStatus({ type: 'loading', message: 'Ürün ekleniyor...' });
     try {
-      const response = await fetch('http://localhost:5000/api/products', {
+      const response = await fetch('https://tutu-backend-api.onrender.com/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

@@ -18,7 +18,7 @@
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/products');
+        const response = await fetch('https://tutu-backend-api.onrender.com/api/products');
         const data = await response.json();
         if (data.success) {
           setProducts(data.data); 
@@ -147,7 +147,7 @@
     const phone = prompt("Telefon Numaranız:");
     const address = prompt("Teslimat Adresiniz:");
     if(name && phone && address) {
-      fetch('http://localhost:5000/api/payment/checkout', {
+      fetch('https://tutu-backend-api.onrender.com/api/payment/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ customer_name: name, phone, address, total_amount: cartTotal, items: cart })
