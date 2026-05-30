@@ -204,7 +204,14 @@ export default function AdminPanel() {
                 <div>
                   <label className="block text-sm font-semibold text-neutral-600 mb-2">Fiyat (TL) *</label>
                   <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500" placeholder="Örn: 850" />
+                  <div>
+  <label className="block text-sm font-semibold text-neutral-600 mb-2">Stok Adedi *</label>
+  <input type="number" name="stock" value={formData.stock} onChange={handleChange} required 
+    className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500" 
+    placeholder="Örn: 50" />
+</div>
                 </div>
+                
                 <div>
                   <label className="block text-sm font-semibold text-neutral-600 mb-2">Kategori *</label>
                   <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500">
