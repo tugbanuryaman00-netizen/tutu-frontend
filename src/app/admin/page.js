@@ -22,6 +22,8 @@ export default function AdminPanel() {
     }
   };
 
+  const [logList, setLogList] = useState([]);
+
   // Ürünleri Backend'den Çekme (Ürün Listesi sekmesi için)
   const fetchProducts = async () => {
     try {
@@ -32,6 +34,16 @@ export default function AdminPanel() {
       console.error("Ürünler çekilemedi:", error);
     }
   };
+
+  const fetchLogs = async () => {
+  try {
+    const response = await fetch('https://tutu-backend-api.onrender.com/api/logs');
+    const data = await response.json();
+    if (data.success) setLogList(data.data);
+  } catch (error) {
+    console.error("Loglar çekilemedi:", error);
+  }
+};
   
   const handleDelete = async (id) => {
   if (!confirm("Bu ürünü silmek istediğinize emin misiniz?")) return;
@@ -130,8 +142,45 @@ export default function AdminPanel() {
           <button onClick={() => setActiveTab('orders')} className={`w-full text-left px-4 py-3 rounded-md font-semibold transition ${activeTab === 'orders' ? 'bg-pink-600' : 'text-neutral-400 hover:text-white hover:bg-neutral-800'}`}>
             💰 Siparişler
           </button>
+          <button onClick={() => { setActiveTab('logs'); fetchLogs(); }} className={`w-full text-left px-4 py-3 rounded-md font-semibold transition ${activeTab === 'logs' ? 'bg-pink-600' : 'text-neutral-400 hover:text-white hover:bg-neutral-800'}`}>
+  🕒 Sistem Logları
+</button>
         </nav>
       </div>
+
+      {/* SEKME 4: SİSTEM LOGLARI */}
+{activeTab === 'logs' && (
+  <div className="bg-white p-5 md:p-8 rounded-xl shadow-sm border border-neutral-100">
+    <h2 className="text-2xl font-bold text-neutral-800 mb-6">Sistem Hareket Dökümü</h2>
+    <div className="overflow-x-auto">
+      <table className="w-full text-left border-collapse">
+        <thead>
+          <tr className="bg-neutral-50 text-neutral-600 border-b border-neutral-200">
+            <th className="py-3 px-4 font-semibold">Tarih</th>
+            <th className="py-3 px-4 font-semibold">Kullanıcı</th>
+            <th className="py-3 px-4 font-semibold">İşlem</th>
+            <th className="py-3 px-4 font-semibold">Detay</th>
+          </tr>
+        </thead>
+        <tbody>
+          {logList.map(log => (
+            <tr key={log.id} className="border-b border-neutral-100 hover:bg-neutral-50">
+              <td className="py-3 px-4 text-sm text-neutral-500">
+                {new Date(log.created_at).toLocaleString('tr-TR')}
+              </td>
+              <td className="py-3 px-4 font-bold text-neutral-700">@{log.username}</td>
+              <td className="py-3 px-4">
+                <span className="bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs font-bold">{log.action}</span>
+              </td>
+              <td className="py-3 px-4 text-sm text-neutral-600">{log.details}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {logList.length === 0 && <p className="text-center text-neutral-500 mt-6">Henüz bir sistem hareketi kaydedilmedi.</p>}
+    </div>
+  </div>
+)}
 
       {/* Ana İçerik */}
 <div className="flex-1 p-4 md:p-10 overflow-y-auto">
