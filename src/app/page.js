@@ -64,6 +64,8 @@ export function PreOrderHero({ onAddToCart }) {
 // 2. ANA SAYFAMIZIN BEYNİ
 export default function Home() {
   const [products, setProducts] = useState([]); 
+  const [isCheckoutMode, setIsCheckoutMode] = useState(false);
+  const [checkoutForm, setCheckoutForm] = useState({ name: '', phone: '', address: '' });
   const [isLoading, setIsLoading] = useState(true); 
   const [activeCategory, setActiveCategory] = useState('TÜMÜ');
   const [cart, setCart] = useState([]);
@@ -122,6 +124,33 @@ export default function Home() {
     setIsCartOpen(true);
   };
 
+  const submitOrder = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('https://tutu-backend-api.onrender.com/api/payment/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          customer_name: checkoutForm.name, 
+          phone: checkoutForm.phone, 
+          address: checkoutForm.address, 
+          total_amount: cartTotal, 
+          items: cart 
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert("Siparişiniz başarıyla alındı! Kargo sürecini yakında takip edebileceksiniz.");
+        setCart([]); 
+        setIsCartOpen(false);
+        setIsCheckoutMode(false);
+        setCheckoutForm({ name: '', phone: '', address: '' });
+      }
+    } catch (error) {
+      alert("Bağlantı hatası yaşandı, lütfen tekrar deneyin.");
+    }
+  };
+
   const handleKombinSubmit = () => {
     if (!selectedProduct) return;
     addToCart(selectedProduct, mainSize, mainColor);
@@ -155,66 +184,99 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 relative">
       
-      {/* SEPET YAN PANELİ */}
+ {/* SEPET VE KASA YAN PANELİ */}
       {isCartOpen && (
         <div className="fixed inset-0 bg-black/40 z-[60] flex justify-end">
           <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col">
             <div className="flex justify-between items-center p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold">Sepetim ({cart.length})</h2>
-              <button onClick={() => setIsCartOpen(false)} className="text-neutral-400 hover:text-pink-600">
+              <h2 className="text-xl font-bold">
+                {isCheckoutMode ? 'Teslimat Bilgileri' : `Sepetim (${cart.length})`}
+              </h2>
+              <button onClick={() => { setIsCartOpen(false); setIsCheckoutMode(false); }} className="text-neutral-400 hover:text-pink-600 transition">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {cart.length === 0 ? (
-                <div className="text-center text-neutral-500 mt-10">Sepetiniz şu an boş.</div>
-              ) : (
-                cart.map((item) => (
-                  <div key={item.uniqueId} className="flex justify-between items-start border-b border-gray-100 pb-4">
-                    <div className="flex gap-3">
-                      {item.image_url && <img src={item.image_url} alt={item.name} className="w-12 h-16 object-cover bg-neutral-100" />}
-                      <div>
-                        <h4 className="text-sm font-semibold text-neutral-800">{item.name}</h4>
-                        <p className="text-xs text-neutral-500 mt-0.5">Renk: {item.selectedColor} | Beden: {item.selectedSize}</p>
-                        <p className="text-pink-600 font-bold text-sm mt-1">{item.price},00 TL</p>
+            {/* EKRAN KONTROLÜ: Sepet mi, Kasa Formu mu? */}
+            {!isCheckoutMode ? (
+              <>
+                {/* 1. STANDART SEPET GÖRÜNÜMÜ */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {cart.length === 0 ? (
+                    <div className="text-center text-neutral-500 mt-10">Sepetiniz şu an boş.</div>
+                  ) : (
+                    cart.map((item) => (
+                      <div key={item.uniqueId} className="flex justify-between items-start border-b border-gray-100 pb-4">
+                        <div className="flex gap-3">
+                          {item.image_url && <img src={item.image_url} alt={item.name} className="w-12 h-16 object-cover bg-neutral-100" />}
+                          <div>
+                            <h4 className="text-sm font-semibold text-neutral-800">{item.name}</h4>
+                            <p className="text-xs text-neutral-500 mt-0.5">Renk: {item.selectedColor} | Beden: {item.selectedSize}</p>
+                            <p className="text-pink-600 font-bold text-sm mt-1">{item.price},00 TL</p>
+                          </div>
+                        </div>
+                        <button onClick={() => removeFromCart(item.uniqueId)} className="text-xs text-red-500 hover:underline">Kaldır</button>
                       </div>
-                    </div>
-                    <button onClick={() => removeFromCart(item.uniqueId)} className="text-xs text-red-500 hover:underline">Kaldır</button>
-                  </div>
-                ))
-              )}
-            </div>
+                    ))
+                  )}
+                </div>
 
-            <div className="p-6 border-t border-gray-100 bg-neutral-50">
-              <div className="flex justify-between items-center mb-4">
-                <span className="font-semibold text-lg">Toplam Tutar:</span>
-                <span className="font-bold text-2xl text-pink-600">{cartTotal},00 TL</span>
-              </div>
-              <button 
-                onClick={() => {
-                  const name = prompt("Adınız Soyadınız:");
-                  const phone = prompt("Telefon Numaranız:");
-                  const address = prompt("Teslimat Adresiniz:");
-                  if(name && phone && address) {
-                    fetch('https://tutu-backend-api.onrender.com/api/payment/checkout', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ customer_name: name, phone, address, total_amount: cartTotal, items: cart })
-                    }).then(() => alert("Siparişiniz başarıyla alındı!"));
-                    setCart([]); setIsCartOpen(false);
-                  }
-                }}
-                className={`w-full py-4 rounded-sm font-bold text-white transition ${cart.length === 0 ? 'bg-neutral-300 cursor-not-allowed' : 'bg-pink-600 hover:bg-neutral-900'}`}
-                disabled={cart.length === 0}
-              >
-                GÜVENLİ ÖDEMEYE GEÇ
-              </button>
-            </div>
+                <div className="p-6 border-t border-gray-100 bg-neutral-50">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="font-semibold text-lg">Toplam Tutar:</span>
+                    <span className="font-bold text-2xl text-pink-600">{cartTotal},00 TL</span>
+                  </div>
+                  <button 
+                    onClick={() => setIsCheckoutMode(true)}
+                    className={`w-full py-4 rounded-sm font-bold text-white transition ${cart.length === 0 ? 'bg-neutral-300 cursor-not-allowed' : 'bg-pink-600 hover:bg-neutral-900'}`}
+                    disabled={cart.length === 0}
+                  >
+                    GÜVENLİ ÖDEMEYE GEÇ
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* 2. ADRES VE İLETİŞİM FORMU (KASA) */}
+                <form onSubmit={submitOrder} className="flex-1 overflow-y-auto p-6 flex flex-col">
+                  <div className="space-y-5 flex-1">
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-600 mb-2">Adınız Soyadınız *</label>
+                      <input type="text" required value={checkoutForm.name} onChange={(e) => setCheckoutForm({...checkoutForm, name: e.target.value})} 
+                        className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500" placeholder="Örn: Ayşe Yılmaz" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-600 mb-2">Telefon Numaranız *</label>
+                      <input type="tel" required value={checkoutForm.phone} onChange={(e) => setCheckoutForm({...checkoutForm, phone: e.target.value})} 
+                        className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500" placeholder="Örn: 0555 123 45 67" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-600 mb-2">Teslimat Adresiniz *</label>
+                      <textarea required value={checkoutForm.address} onChange={(e) => setCheckoutForm({...checkoutForm, address: e.target.value})} 
+                        className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500 h-32 resize-none" 
+                        placeholder="Örn: ... Mah. ... Sok. No:1 D:2 Gebze / Kocaeli"></textarea>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 border-t border-gray-100 pt-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <span className="font-semibold text-neutral-500">Ödenecek Tutar:</span>
+                      <span className="font-black text-2xl text-neutral-900">{cartTotal},00 TL</span>
+                    </div>
+                    <button type="submit" className="w-full bg-neutral-900 text-white font-bold py-4 rounded-lg hover:bg-pink-600 transition shadow-xl">
+                      SİPARİŞİ TAMAMLA
+                    </button>
+                    <button type="button" onClick={() => setIsCheckoutMode(false)} className="w-full mt-3 text-sm font-semibold text-neutral-500 hover:text-neutral-900 py-2">
+                      ← Sepete Geri Dön
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
-
+      
       {/* ÜST NAVBAR */}
       <header className="bg-white border-b border-gray-100 py-4 sticky top-0 z-50">
         <div className="container mx-auto px-4 flex justify-between items-center">
