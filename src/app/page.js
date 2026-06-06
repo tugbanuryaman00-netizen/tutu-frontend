@@ -356,7 +356,7 @@ export default function Home() {
           </section>
 
           {/* 2. ONUN ALTINDA ÖN SİPARİŞ VİTRİNİ */}
-          <PreOrderHero />
+         <PreOrderHero onAddToCart={addToCart} />
 
           {/* 3. EN ALTTA ÜRÜN LİSTELEME GRİDİ */}
           <section className="py-16 container mx-auto px-4">
