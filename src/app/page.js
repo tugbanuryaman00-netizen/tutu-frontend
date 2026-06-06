@@ -64,8 +64,13 @@ export function PreOrderHero({ onAddToCart }) {
 // 2. ANA SAYFAMIZIN BEYNİ
 export default function Home() {
   const [products, setProducts] = useState([]); 
-  const [isCheckoutMode, setIsCheckoutMode] = useState(false);
-  const [checkoutForm, setCheckoutForm] = useState({ name: '', phone: '', address: '' });
+const [isCheckoutMode, setIsCheckoutMode] = useState(false);
+  // YENİ: Detaylı adres hafızası ve kullanıcı durumu
+  const [checkoutForm, setCheckoutForm] = useState({ 
+    name: '', phone: '', city: '', district: '', neighborhood: '', address: '', saveAddress: false 
+  });
+  const [user, setUser] = useState(null); // Müşteri giriş yaptıysa bilgileri burada tutulacak
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false); // Google Giriş penceresi
   const [isLoading, setIsLoading] = useState(true); 
   const [activeCategory, setActiveCategory] = useState('TÜMÜ');
   const [cart, setCart] = useState([]);
@@ -124,8 +129,12 @@ export default function Home() {
     setIsCartOpen(true);
   };
 
-  const submitOrder = async (e) => {
+const submitOrder = async (e) => {
     e.preventDefault();
+    
+    // Şehir, ilçe, mahalle ve açık adresi tek bir profesyonel metinde birleştiriyoruz
+    const fullShippingAddress = `${checkoutForm.city} / ${checkoutForm.district} / ${checkoutForm.neighborhood} Mah. - Açık Adres: ${checkoutForm.address}`;
+
     try {
       const response = await fetch('https://tutu-backend-api.onrender.com/api/payment/checkout', {
         method: 'POST',
@@ -133,18 +142,18 @@ export default function Home() {
         body: JSON.stringify({ 
           customer_name: checkoutForm.name, 
           phone: checkoutForm.phone, 
-          address: checkoutForm.address, 
+          address: fullShippingAddress, // Birleştirilmiş adres gidiyor
           total_amount: cartTotal, 
           items: cart 
         })
       });
       const data = await response.json();
       if (data.success) {
-        alert("Siparişiniz başarıyla alındı! Kargo sürecini yakında takip edebileceksiniz.");
+        alert("Siparişiniz başarıyla alındı! Siparişlerim panelinden kargo sürecini takip edebilirsiniz.");
         setCart([]); 
         setIsCartOpen(false);
         setIsCheckoutMode(false);
-        setCheckoutForm({ name: '', phone: '', address: '' });
+        setCheckoutForm({ name: '', phone: '', city: '', district: '', neighborhood: '', address: '', saveAddress: false });
       }
     } catch (error) {
       alert("Bağlantı hatası yaşandı, lütfen tekrar deneyin.");
@@ -237,33 +246,62 @@ export default function Home() {
               </>
             ) : (
               <>
-                {/* 2. ADRES VE İLETİŞİM FORMU (KASA) */}
+{/* 2. DETAYLI ADRES VE İLETİŞİM FORMU (KASA) */}
                 <form onSubmit={submitOrder} className="flex-1 overflow-y-auto p-6 flex flex-col">
-                  <div className="space-y-5 flex-1">
+                  <div className="space-y-4 flex-1">
                     <div>
-                      <label className="block text-sm font-semibold text-neutral-600 mb-2">Adınız Soyadınız *</label>
+                      <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Adınız Soyadınız *</label>
                       <input type="text" required value={checkoutForm.name} onChange={(e) => setCheckoutForm({...checkoutForm, name: e.target.value})} 
-                        className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500" placeholder="Örn: Ayşe Yılmaz" />
+                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50" placeholder="Örn: Ayşe Yılmaz" />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-neutral-600 mb-2">Telefon Numaranız *</label>
+                      <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Telefon Numaranız *</label>
                       <input type="tel" required value={checkoutForm.phone} onChange={(e) => setCheckoutForm({...checkoutForm, phone: e.target.value})} 
-                        className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500" placeholder="Örn: 0555 123 45 67" />
+                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50" placeholder="Örn: 0555 123 45 67" />
                     </div>
+                    
+                    <div className="grid grid-cols-2 gap-4 pt-2">
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">İl *</label>
+                        <input type="text" required value={checkoutForm.city} onChange={(e) => setCheckoutForm({...checkoutForm, city: e.target.value})} 
+                          className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50" placeholder="Örn: Kocaeli" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">İlçe *</label>
+                        <input type="text" required value={checkoutForm.district} onChange={(e) => setCheckoutForm({...checkoutForm, district: e.target.value})} 
+                          className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50" placeholder="Örn: Gebze" />
+                      </div>
+                    </div>
+                    
                     <div>
-                      <label className="block text-sm font-semibold text-neutral-600 mb-2">Teslimat Adresiniz *</label>
+                      <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Mahalle *</label>
+                      <input type="text" required value={checkoutForm.neighborhood} onChange={(e) => setCheckoutForm({...checkoutForm, neighborhood: e.target.value})} 
+                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50" placeholder="Örn: Osman Yılmaz" />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Sokak, Bina, Kapı No *</label>
                       <textarea required value={checkoutForm.address} onChange={(e) => setCheckoutForm({...checkoutForm, address: e.target.value})} 
-                        className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:outline-none focus:border-pink-500 h-32 resize-none" 
-                        placeholder="Örn: ... Mah. ... Sok. No:1 D:2 Gebze / Kocaeli"></textarea>
+                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50 h-20 resize-none" 
+                        placeholder="Örn: 600. Sokak, Şahin Apt. No:12 Daire:4"></textarea>
+                    </div>
+
+                    {/* ADRESİ KAYDET CHECKBOX'I */}
+                    <div className="flex items-center pt-2">
+                      <input type="checkbox" id="saveAddress" checked={checkoutForm.saveAddress} onChange={(e) => setCheckoutForm({...checkoutForm, saveAddress: e.target.checked})} 
+                        className="w-5 h-5 accent-pink-600 rounded border-gray-300 cursor-pointer" />
+                      <label htmlFor="saveAddress" className="ml-3 text-sm font-semibold text-neutral-700 cursor-pointer">
+                        Sonraki alışverişlerim için bu adresi kaydet
+                      </label>
                     </div>
                   </div>
 
-                  <div className="mt-8 border-t border-gray-100 pt-6">
+                  <div className="mt-6 border-t border-gray-100 pt-6">
                     <div className="flex justify-between items-center mb-6">
                       <span className="font-semibold text-neutral-500">Ödenecek Tutar:</span>
                       <span className="font-black text-2xl text-neutral-900">{cartTotal},00 TL</span>
                     </div>
-                    <button type="submit" className="w-full bg-neutral-900 text-white font-bold py-4 rounded-lg hover:bg-pink-600 transition shadow-xl">
+                    <button type="submit" className="w-full bg-neutral-900 text-white font-bold py-4 rounded-lg hover:bg-pink-600 transition shadow-xl tracking-widest">
                       SİPARİŞİ TAMAMLA
                     </button>
                     <button type="button" onClick={() => setIsCheckoutMode(false)} className="w-full mt-3 text-sm font-semibold text-neutral-500 hover:text-neutral-900 py-2">
@@ -276,7 +314,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      
+
       {/* ÜST NAVBAR */}
       <header className="bg-white border-b border-gray-100 py-4 sticky top-0 z-50">
         <div className="container mx-auto px-4 flex justify-between items-center">
@@ -292,7 +330,15 @@ export default function Home() {
             ))}
           </nav>
 
-          <div className="flex space-x-5 text-neutral-800">
+<div className="flex space-x-5 text-neutral-800 items-center">
+            
+            {/* HESABIM / GİRİŞ BUTONU */}
+            <button onClick={() => user ? alert('Siparişlerim paneli açılacak') : setIsAuthModalOpen(true)} className="flex items-center gap-2 hover:text-pink-600 transition font-semibold text-sm mr-2">
+              <svg fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
+              <span className="hidden md:inline">{user ? 'Hesabım' : 'Giriş Yap'}</span>
+            </button>
+
+            {/* SEPET BUTONU */}
             <button onClick={() => setIsCartOpen(true)} className="hover:text-pink-600 transition relative transform hover:scale-110">
               <svg fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"></path></svg>
               {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-pink-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">{cart.length}</span>}
