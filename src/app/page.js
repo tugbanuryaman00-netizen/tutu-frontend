@@ -386,7 +386,7 @@ const submitOrder = async (e) => {
 <div className="flex space-x-5 text-neutral-800 items-center">
             
             {/* HESABIM / GİRİŞ BUTONU */}
-            <button onClick={() => user ? alert('Siparişlerim paneli açılacak') : setIsAuthModalOpen(true)} className="flex items-center gap-2 hover:text-pink-600 transition font-semibold text-sm mr-2">
+            <button onClick={() => user ? window.location.href='/hesabim' : setIsAuthModalOpen(true)} className="flex items-center gap-2 hover:text-pink-600 transition font-semibold text-sm mr-2">
               <svg fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
               <span className="hidden md:inline">{user ? 'Hesabım' : 'Giriş Yap'}</span>
             </button>
