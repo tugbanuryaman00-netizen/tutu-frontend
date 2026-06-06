@@ -1,5 +1,5 @@
-import { supabase } from '../supabase';
 "use client";
+import { supabase } from '../supabase';
 import React, { useState, useEffect } from 'react';
 
 // 1. ÖZEL TASARIM / ÖN SİPARİŞ VİTRİNİ
