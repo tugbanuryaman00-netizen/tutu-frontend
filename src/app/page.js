@@ -58,6 +58,23 @@ export function PreOrderHero() {
   );
 }
 
+export default function Home() {
+  return (
+    <main className="min-h-screen bg-white">
+      
+      {/* Vitrini ekrana çağırdığımız sihirli kelime: */}
+      <PreOrderHero />
+
+      {/* Eğer daha önce sayfanızda olan başka yazılar, ürünler veya kodlar varsa onlar bunun altında kalmaya devam etsin */}
+      <div className="p-10 text-center">
+        <h1 className="text-3xl font-bold">Diğer Ürünlerimiz</h1>
+        {/* ... */}
+      </div>
+      
+    </main>
+  );
+}
+
 "use client";import React, { useState, useEffect } from 'react';export default function Home() {
   // --- Sistem Durumları (State) ---
   const [products, setProducts] = useState([]); 
