@@ -1,5 +1,7 @@
+"use client";
+import React, { useState, useEffect } from 'react';
 
-// Özel Tasarım / Ön Sipariş Vitrini
+// 1. ÖZEL TASARIM / ÖN SİPARİŞ VİTRİNİ BURADA DURUYOR
 export function PreOrderHero() {
   const specialProducts = [
     {
@@ -36,10 +38,8 @@ export function PreOrderHero() {
               </div>
               
               <div className="h-[400px] md:h-[500px] w-full relative">
-                {/* Resim Alanı - Kendi resimlerinizle değiştirebilirsiniz */}
                 <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-90 group-hover:opacity-100" />
                 
-                {/* Alt Karartma ve Bilgiler */}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/70 to-transparent p-6 pt-20">
                   <h3 className="text-2xl font-bold text-white mb-2">{product.name}</h3>
                   <div className="flex justify-between items-center">
@@ -58,40 +58,20 @@ export function PreOrderHero() {
   );
 }
 
+// 2. ANA SAYFAMIZIN BEYNİ (SEPET, MOTOR VE ÜRÜNLER)
 export default function Home() {
-  return (
-    <main className="min-h-screen bg-white">
-      
-      {/* Vitrini ekrana çağırdığımız sihirli kelime: */}
-      <PreOrderHero />
-
-      {/* Eğer daha önce sayfanızda olan başka yazılar, ürünler veya kodlar varsa onlar bunun altında kalmaya devam etsin */}
-      <div className="p-10 text-center">
-        <h1 className="text-3xl font-bold">Diğer Ürünlerimiz</h1>
-        {/* ... */}
-      </div>
-      
-    </main>
-  );
-}
-
-"use client";import React, { useState, useEffect } from 'react';export default function Home() {
-  // --- Sistem Durumları (State) ---
   const [products, setProducts] = useState([]); 
   const [isLoading, setIsLoading] = useState(true); 
   const [activeCategory, setActiveCategory] = useState('TÜMÜ');
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // --- Ürün Detay ve Varyant Durumları ---
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [mainSize, setMainSize] = useState('S');
   const [mainColor, setMainColor] = useState('Siyah');
   
-  // Kombin ürünlerinin seçimlerini tutan nesne (Örn: { urunId: { size: 'M', color: 'Beyaz', checked: true } })
   const [kombinSelections, setKombinSelections] = useState({});
 
-  // Veritabanından Ürünleri Çek
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -109,13 +89,11 @@ export default function Home() {
     fetchProducts();
   }, []);
 
-  // Ana ürün değiştiğinde kombin seçimlerini sıfırla ve otomatik ata
   useEffect(() => {
     if (selectedProduct) {
       setMainSize(selectedProduct.category === 'GİYİM' ? 'S' : 'Standart Beden');
       setMainColor('Siyah');
       
-      // İncelenen ürün dışındaki kategorilerden kombin önerileri belirle
       const matches = products.filter(p => p.id !== selectedProduct.id && p.category !== selectedProduct.category).slice(0, 2);
       const initialKombin = {};
       matches.forEach(p => {
@@ -130,7 +108,6 @@ export default function Home() {
     }
   }, [selectedProduct, products]);
 
-  // --- Sepet Fonksiyonları ---
   const addToCart = (product, size, color) => {
     const cartItem = {
       ...product,
@@ -142,14 +119,9 @@ export default function Home() {
     setIsCartOpen(true);
   };
 
-  // Toplu Kombin Siparişi Ekleme
   const handleKombinSubmit = () => {
     if (!selectedProduct) return;
-    
-    // 1. Önce Ana Ürünü Ekle
     addToCart(selectedProduct, mainSize, mainColor);
-
-    // 2. Seçili (Onaylı) Kombin Ürünlerini Sırayla Ekle
     Object.keys(kombinSelections).forEach(id => {
       const selection = kombinSelections[id];
       if (selection.checked) {
@@ -164,12 +136,10 @@ export default function Home() {
 
   const cartTotal = cart.reduce((total, item) => total + item.price, 0);
 
-  // Kategori Filtreleme (Katalog için)
   const filteredProducts = activeCategory === 'TÜMÜ' 
     ? products 
     : products.filter(p => p.category === activeCategory);
 
-  // Yükleniyor Animasyonu
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
@@ -182,7 +152,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 relative">
       
-      {/* --- SEPET YAN PANELİ --- */}
+      {/* SEPET YAN PANELİ */}
       {isCartOpen && (
         <div className="fixed inset-0 bg-black/40 z-[60] flex justify-end">
           <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col">
@@ -218,31 +188,31 @@ export default function Home() {
                 <span className="font-semibold text-lg">Toplam Tutar:</span>
                 <span className="font-bold text-2xl text-pink-600">{cartTotal},00 TL</span>
               </div>
-<button 
-  onClick={() => {
-    const name = prompt("Adınız Soyadınız:");
-    const phone = prompt("Telefon Numaranız:");
-    const address = prompt("Teslimat Adresiniz:");
-    if(name && phone && address) {
-      fetch('https://tutu-backend-api.onrender.com/api/payment/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customer_name: name, phone, address, total_amount: cartTotal, items: cart })
-      }).then(() => alert("Siparişiniz başarıyla alındı!"));
-      setCart([]); setIsCartOpen(false);
-    }
-  }}
-  className={`w-full py-4 rounded-sm font-bold text-white transition ${cart.length === 0 ? 'bg-neutral-300 cursor-not-allowed' : 'bg-pink-600 hover:bg-neutral-900'}`}
-  disabled={cart.length === 0}
->
-  GÜVENLİ ÖDEMEYE GEÇ
-</button>
+              <button 
+                onClick={() => {
+                  const name = prompt("Adınız Soyadınız:");
+                  const phone = prompt("Telefon Numaranız:");
+                  const address = prompt("Teslimat Adresiniz:");
+                  if(name && phone && address) {
+                    fetch('https://tutu-backend-api.onrender.com/api/payment/checkout', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ customer_name: name, phone, address, total_amount: cartTotal, items: cart })
+                    }).then(() => alert("Siparişiniz başarıyla alındı!"));
+                    setCart([]); setIsCartOpen(false);
+                  }
+                }}
+                className={`w-full py-4 rounded-sm font-bold text-white transition ${cart.length === 0 ? 'bg-neutral-300 cursor-not-allowed' : 'bg-pink-600 hover:bg-neutral-900'}`}
+                disabled={cart.length === 0}
+              >
+                GÜVENLİ ÖDEMEYE GEÇ
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- ÜST NAVBAR --- */}
+      {/* ÜST NAVBAR */}
       <header className="bg-white border-b border-gray-100 py-4 sticky top-0 z-50">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div onClick={() => setSelectedProduct(null)} className="text-3xl font-extrabold tracking-tighter text-neutral-900 flex items-center gap-1 cursor-pointer">
@@ -266,16 +236,15 @@ export default function Home() {
         </div>
       </header>
 
-      {/* --- GÖRÜNÜM KONTROLÜ (DETAY VEYA KATALOG) --- */}
+      {/* GÖRÜNÜM KONTROLÜ */}
       {selectedProduct ? (
-        /* ================= ÜRÜN DETAY SAYFASI GÖRÜNÜMÜ ================= */
+        /* ÜRÜN DETAY SAYFASI GÖRÜNÜMÜ */
         <div className="container mx-auto px-4 py-10 max-w-5xl animate-fade-in">
           <button onClick={() => setSelectedProduct(null)} className="mb-8 flex items-center gap-2 text-sm font-semibold text-neutral-500 hover:text-pink-600 transition">
             ← Alışverişe Devam Et
           </button>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 border-b border-gray-100 pb-16">
-            {/* Ürün Görseli */}
             <div className="bg-neutral-50 aspect-[3/4] border border-gray-100 overflow-hidden rounded-sm">
               {selectedProduct.image_url ? (
                 <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-cover" />
@@ -284,7 +253,6 @@ export default function Home() {
               )}
             </div>
 
-            {/* Ürün Detayları Bilgisi */}
             <div className="flex flex-col justify-between">
               <div>
                 <span className="text-xs font-bold uppercase tracking-widest text-pink-600 bg-pink-50 px-2 py-1 rounded">{selectedProduct.category}</span>
@@ -293,9 +261,7 @@ export default function Home() {
                 <p className="text-sm text-neutral-500 mt-6 font-light leading-relaxed">TUTU Giyim kalitesiyle özel olarak üretilen bu parça, modern ve şık hatlarıyla gardırobunuzun vazgeçilmezi olmaya aday.</p>
               </div>
 
-              {/* Varyant Seçimleri */}
               <div className="mt-8 space-y-6">
-                {/* Renk Seçimi */}
                 <div>
                   <h4 className="text-xs font-bold text-neutral-500 tracking-wider uppercase mb-3">Renk Seçimi: {mainColor}</h4>
                   <div className="flex gap-2">
@@ -307,7 +273,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Beden Seçimi (Dinamik Kontrol) */}
                 <div>
                   <h4 className="text-xs font-bold text-neutral-500 tracking-wider uppercase mb-3">Beden Seçimi: {mainSize}</h4>
                   {selectedProduct.category === 'GİYİM' ? (
@@ -326,7 +291,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ================= BU KOMBİNİ TAMAMLA MENÜSÜ ================= */}
           <div className="py-16">
             <h3 className="text-xl font-bold tracking-tight text-neutral-900 mb-8">Bu Kombini Tamamla</h3>
             <div className="space-y-6 max-w-3xl">
@@ -343,7 +307,6 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Kombin Ürünü Beden/Renk Seçimi */}
                     <div className="flex gap-4 items-center w-full md:w-auto justify-between md:justify-end">
                       <select value={item.color} onChange={(e) => setKombinSelections({ ...kombinSelections, [id]: { ...item, color: e.target.value } })} className="text-xs bg-white border border-gray-200 p-2 rounded focus:outline-none focus:border-pink-500">
                         <option value="Siyah">Siyah</option>
@@ -368,7 +331,6 @@ export default function Home() {
               })}
             </div>
 
-            {/* Büyük Sepet Aksiyon Butonu */}
             <div className="mt-10 border-t border-gray-100 pt-8">
               <button onClick={handleKombinSubmit} className="bg-pink-600 text-white px-12 py-5 font-bold tracking-widest text-sm hover:bg-neutral-900 shadow-xl transition-all duration-300">
                 SEÇİLEN KOMBİNİ SEPETE EKLE
@@ -377,8 +339,11 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        /* ================= STANDART KATALOG GÖRÜNÜMÜ ================= */
+        /* STANDART KATALOG GÖRÜNÜMÜ */
         <>
+          {/* EKSİK OLAN SİHİRLİ DOKUNUŞ BURADA: Vitrini Ürünlerin Üstüne Ekledik */}
+          <PreOrderHero />
+
           {/* HERO BANNER */}
           <section className="relative bg-gradient-to-b from-pink-50/30 to-white py-24 border-b border-gray-100">
             <div className="container mx-auto px-4 flex flex-col items-center text-center">
@@ -402,7 +367,6 @@ export default function Home() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
               {filteredProducts.map((product) => (
                 <div key={product.id} onClick={() => setSelectedProduct(product)} className="group flex flex-col cursor-pointer">
-                  {/* Resim Alanı */}
                   <div className="bg-neutral-100 aspect-[3/4] mb-4 overflow-hidden relative border border-gray-50 flex-shrink-0">
                     {product.image_url ? (
                       <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-in-out" />
@@ -433,5 +397,3 @@ export default function Home() {
     </div>
   );
 }
-
-// vercel tetikleme
