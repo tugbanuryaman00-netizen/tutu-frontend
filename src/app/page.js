@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 
-// 1. ÖZEL TASARIM / ÖN SİPARİŞ VİTRİNİ BURADA DURUYOR
+// 1. ÖZEL TASARIM / ÖN SİPARİŞ VİTRİNİ
 export function PreOrderHero() {
   const specialProducts = [
     {
@@ -58,7 +58,7 @@ export function PreOrderHero() {
   );
 }
 
-// 2. ANA SAYFAMIZIN BEYNİ (SEPET, MOTOR VE ÜRÜNLER)
+// 2. ANA SAYFAMIZIN BEYNİ
 export default function Home() {
   const [products, setProducts] = useState([]); 
   const [isLoading, setIsLoading] = useState(true); 
@@ -238,7 +238,7 @@ export default function Home() {
 
       {/* GÖRÜNÜM KONTROLÜ */}
       {selectedProduct ? (
-        /* ÜRÜN DETAY SAYFASI GÖRÜNÜMÜ */
+        /* ================= ÜRÜN DETAY SAYFASI GÖRÜNÜMÜ ================= */
         <div className="container mx-auto px-4 py-10 max-w-5xl animate-fade-in">
           <button onClick={() => setSelectedProduct(null)} className="mb-8 flex items-center gap-2 text-sm font-semibold text-neutral-500 hover:text-pink-600 transition">
             ← Alışverişe Devam Et
@@ -338,8 +338,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-  {/* HERO BANNER */}
+      ) : (
+        /* ================= STANDART KATALOG GÖRÜNÜMÜ ================= */
+        <>
+          {/* 1. EN ÜSTTE HERO BANNER */}
           <section className="relative bg-gradient-to-b from-pink-50/30 to-white py-24 border-b border-gray-100">
             <div className="container mx-auto px-4 flex flex-col items-center text-center">
               <span className="text-pink-600 font-bold tracking-widest text-sm mb-4 uppercase">Yeni Sezon Koleksiyonu</span>
@@ -350,13 +352,10 @@ export default function Home() {
             </div>
           </section>
 
-      ) : (
-        /* STANDART KATALOG GÖRÜNÜMÜ */
-        <>
-          {/* EKSİK OLAN SİHİRLİ DOKUNUŞ BURADA: Vitrini Ürünlerin Üstüne Ekledik */}
+          {/* 2. ONUN ALTINDA ÖN SİPARİŞ VİTRİNİ */}
           <PreOrderHero />
 
-          {/* ÜRÜN LİSTELEME GRİDİ */}
+          {/* 3. EN ALTTA ÜRÜN LİSTELEME GRİDİ */}
           <section className="py-16 container mx-auto px-4">
             <div className="flex justify-between items-end mb-10 border-b border-gray-100 pb-4">
               <h2 className="text-2xl md:text-3xl font-bold text-neutral-900">
