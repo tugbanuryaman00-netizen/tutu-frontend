@@ -6,18 +6,25 @@ export default function Hesabim() {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('siparisler'); // Hangi menünün açık olduğu
   const [isLoading, setIsLoading] = useState(true);
+  const [myOrders, setMyOrders] = useState([]);
 
   useEffect(() => {
     // Sayfa açıldığında kimin geldiğine bak
-    const checkUser = async () => {
+const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        // Eğer gizlice bu sayfaya girmeye çalışırsa veya çıkış yaparsa ana sayfaya şutla
         window.location.href = '/'; 
       } else {
         setUser(session.user);
-        setIsLoading(false);
+        // Kullanıcının siparişlerini Backend'den çek
+        fetch(`https://tutu-backend-api.onrender.com/api/orders/user/${session.user.id}`)
+          .then(res => res.json())
+          .then(data => {
+            if(data.success) setMyOrders(data.data);
+            setIsLoading(false);
+          })
+          .catch(() => setIsLoading(false));
       }
     };
     
@@ -86,6 +93,7 @@ export default function Hesabim() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                   Siparişlerim
                 </button>
+
                 
                 <button 
                   onClick={() => setActiveTab('profil')}
@@ -121,16 +129,68 @@ export default function Hesabim() {
           <div className="w-full md:w-3/4">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 min-h-[500px]">
               
-              {/* SİPARİŞLERİM SEKMESİ */}
+             {/* SİPARİŞLERİM SEKMESİ */}
               {activeTab === 'siparisler' && (
                 <div className="animate-fade-in">
                   <h2 className="text-2xl font-extrabold text-neutral-900 mb-6 tracking-tight">Siparişlerim</h2>
-                  <div className="bg-neutral-50 rounded-xl border border-dashed border-gray-300 p-12 text-center">
-                    <svg className="w-16 h-16 text-neutral-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                    <h3 className="text-lg font-bold text-neutral-700 mb-2">Henüz Bir Siparişiniz Yok</h3>
-                    <p className="text-neutral-500 max-w-md mx-auto mb-6">TUTU'nun eşsiz koleksiyonlarını keşfetmek ve gardırobunuzu yenilemek için alışverişe hemen başlayın.</p>
-                    <a href="/" className="inline-block bg-neutral-900 text-white font-bold px-8 py-3 rounded-lg hover:bg-pink-600 transition shadow-lg">Alışverişe Başla</a>
-                  </div>
+                  
+                  {myOrders.length === 0 ? (
+                    <div className="bg-neutral-50 rounded-xl border border-dashed border-gray-300 p-12 text-center">
+                      <svg className="w-16 h-16 text-neutral-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                      <h3 className="text-lg font-bold text-neutral-700 mb-2">Henüz Bir Siparişiniz Yok</h3>
+                      <a href="/" className="inline-block bg-neutral-900 text-white font-bold px-8 py-3 rounded-lg hover:bg-pink-600 transition shadow-lg mt-4">Alışverişe Başla</a>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {myOrders.map(order => {
+                        // Kargo Adımları
+                        const steps = ['Hazırlanıyor', 'Kargoya Verildi', 'Kargo Şubesinde', 'Dağıtıma Çıktı', 'Teslim Edildi'];
+                        const currentStepIndex = steps.indexOf(order.status || 'Hazırlanıyor');
+
+                        return (
+                          <div key={order.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                            <div className="flex justify-between items-start border-b border-gray-100 pb-4 mb-6">
+                              <div>
+                                <p className="text-xs text-neutral-400 font-bold uppercase tracking-wider mb-1">Sipariş No: #{order.id}</p>
+                                <p className="text-sm text-neutral-600">Tarih: {new Date(order.created_at).toLocaleDateString('tr-TR')}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-2xl font-black text-pink-600">{order.total_amount},00 TL</p>
+                              </div>
+                            </div>
+
+                            {/* İLERLEME ÇUBUĞU (PROGRESS BAR) */}
+                            <div className="relative pt-2 mb-8">
+                              <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-neutral-100">
+                                <div style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }} className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-pink-500 transition-all duration-1000"></div>
+                              </div>
+                              <div className="flex justify-between text-xs font-bold text-neutral-400">
+                                {steps.map((step, index) => (
+                                  <div key={index} className={`text-center w-1/5 ${index <= currentStepIndex ? 'text-pink-600' : ''}`}>
+                                    <div className={`mx-auto w-4 h-4 rounded-full mb-1 border-2 ${index <= currentStepIndex ? 'bg-pink-600 border-pink-600' : 'bg-white border-neutral-300'}`}></div>
+                                    <span className="hidden md:block">{step}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* SİPARİŞ EDİLEN ÜRÜNLER (MİNİ LİSTE) */}
+                            <div className="flex gap-4 overflow-x-auto pb-2">
+                              {order.cart_items && typeof order.cart_items === 'string' ? JSON.parse(order.cart_items).map((item, idx) => (
+                                <div key={idx} className="flex-shrink-0 flex items-center gap-3 bg-neutral-50 pr-4 rounded-lg border border-gray-100 overflow-hidden">
+                                  {item.image_url && <img src={item.image_url} alt={item.name} className="w-12 h-16 object-cover" />}
+                                  <div>
+                                    <p className="text-xs font-bold text-neutral-800 line-clamp-1 max-w-[120px]">{item.name}</p>
+                                    <p className="text-[10px] text-neutral-500">{item.selectedColor} | {item.selectedSize}</p>
+                                  </div>
+                                </div>
+                              )) : null}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 
