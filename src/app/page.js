@@ -172,7 +172,8 @@ const submitOrder = async (e) => {
           phone: checkoutForm.phone, 
           address: fullShippingAddress, // Birleştirilmiş adres gidiyor
           total_amount: cartTotal, 
-          items: cart 
+          items: cart ,
+          user_id: user ? user.id : null
         })
       });
       const data = await response.json();
