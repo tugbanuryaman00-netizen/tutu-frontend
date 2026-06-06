@@ -338,13 +338,8 @@ export default function Home() {
             </div>
           </div>
         </div>
-      ) : (
-        /* STANDART KATALOG GÖRÜNÜMÜ */
-        <>
-          {/* EKSİK OLAN SİHİRLİ DOKUNUŞ BURADA: Vitrini Ürünlerin Üstüne Ekledik */}
-          <PreOrderHero />
 
-          {/* HERO BANNER */}
+  {/* HERO BANNER */}
           <section className="relative bg-gradient-to-b from-pink-50/30 to-white py-24 border-b border-gray-100">
             <div className="container mx-auto px-4 flex flex-col items-center text-center">
               <span className="text-pink-600 font-bold tracking-widest text-sm mb-4 uppercase">Yeni Sezon Koleksiyonu</span>
@@ -354,6 +349,12 @@ export default function Home() {
               <p className="text-lg md:text-xl text-neutral-500 mb-10 max-w-2xl font-light">Modern kadının gücünden ilham alan yepyeni tasarımları keşfet. Premium dokular, zamansız çizgiler.</p>
             </div>
           </section>
+
+      ) : (
+        /* STANDART KATALOG GÖRÜNÜMÜ */
+        <>
+          {/* EKSİK OLAN SİHİRLİ DOKUNUŞ BURADA: Vitrini Ürünlerin Üstüne Ekledik */}
+          <PreOrderHero />
 
           {/* ÜRÜN LİSTELEME GRİDİ */}
           <section className="py-16 container mx-auto px-4">
