@@ -2,19 +2,19 @@
 import React, { useState, useEffect } from 'react';
 
 // 1. ÖZEL TASARIM / ÖN SİPARİŞ VİTRİNİ
-export function PreOrderHero() {
+export function PreOrderHero({ onAddToCart }) {
   const specialProducts = [
     {
       id: "pre-1",
       name: "TUTU Prive - Gece Koleksiyonu Saten Elbise",
-      price: "2.450",
+      price: 2450, // Matematiksel işlem için noktayı kaldırdık, sayıya çevirdik
       image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80",
       tag: "ÖZEL TASARIM",
     },
     {
       id: "pre-2",
       name: "TUTU Signature - Oversize Kaşe Kaban",
-      price: "4.800",
+      price: 4800, // Sayıya çevirdik
       image: "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=800&q=80",
       tag: "ÖN SİPARİŞ",
     }
@@ -43,8 +43,11 @@ export function PreOrderHero() {
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/70 to-transparent p-6 pt-20">
                   <h3 className="text-2xl font-bold text-white mb-2">{product.name}</h3>
                   <div className="flex justify-between items-center">
-                    <span className="text-pink-400 font-extrabold text-xl">{product.price} TL</span>
-                    <button className="bg-white text-neutral-900 px-6 py-3 rounded-lg font-bold hover:bg-pink-500 hover:text-white transition duration-300 shadow-[0_0_15px_rgba(236,72,153,0.3)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)]">
+                    <span className="text-pink-400 font-extrabold text-xl">{product.price},00 TL</span>
+                    {/* İŞTE SEPETE EKLE KABLOSUNU BAĞLADIĞIMIZ YER */}
+                    <button 
+                      onClick={() => onAddToCart(product, 'Özel Beden', 'Özel Üretim')}
+                      className="bg-white text-neutral-900 px-6 py-3 rounded-lg font-bold hover:bg-pink-500 hover:text-white transition duration-300 shadow-[0_0_15px_rgba(236,72,153,0.3)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)]">
                       Sepete Ekle
                     </button>
                   </div>
