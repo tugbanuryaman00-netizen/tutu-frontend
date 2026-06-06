@@ -1,3 +1,63 @@
+
+// Özel Tasarım / Ön Sipariş Vitrini
+export function PreOrderHero() {
+  const specialProducts = [
+    {
+      id: "pre-1",
+      name: "TUTU Prive - Gece Koleksiyonu Saten Elbise",
+      price: "2.450",
+      image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80",
+      tag: "ÖZEL TASARIM",
+    },
+    {
+      id: "pre-2",
+      name: "TUTU Signature - Oversize Kaşe Kaban",
+      price: "4.800",
+      image: "https://images.unsplash.com/photo-1539533113208-f6df8cc8b543?w=800&q=80",
+      tag: "ÖN SİPARİŞ",
+    }
+  ];
+
+  return (
+    <section className="w-full bg-neutral-900 py-16 px-4 md:px-10">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">TUTU<span className="text-pink-500">.</span> EXCLUSIVE</h2>
+          <p className="text-neutral-400 font-medium">Sadece size özel üretilen, sınırlı sayıdaki ikonik parçaları hemen ayırtın.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {specialProducts.map((product) => (
+            <div key={product.id} className="relative group overflow-hidden rounded-2xl bg-neutral-800 shadow-2xl">
+              <div className="absolute top-4 left-4 z-10">
+                <span className="bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg tracking-wider">
+                  {product.tag}
+                </span>
+              </div>
+              
+              <div className="h-[400px] md:h-[500px] w-full relative">
+                {/* Resim Alanı - Kendi resimlerinizle değiştirebilirsiniz */}
+                <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-90 group-hover:opacity-100" />
+                
+                {/* Alt Karartma ve Bilgiler */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/70 to-transparent p-6 pt-20">
+                  <h3 className="text-2xl font-bold text-white mb-2">{product.name}</h3>
+                  <div className="flex justify-between items-center">
+                    <span className="text-pink-400 font-extrabold text-xl">{product.price} TL</span>
+                    <button className="bg-white text-neutral-900 px-6 py-3 rounded-lg font-bold hover:bg-pink-500 hover:text-white transition duration-300 shadow-[0_0_15px_rgba(236,72,153,0.3)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)]">
+                      Sepete Ekle
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 "use client";import React, { useState, useEffect } from 'react';export default function Home() {
   // --- Sistem Durumları (State) ---
   const [products, setProducts] = useState([]); 
