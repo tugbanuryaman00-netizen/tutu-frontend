@@ -190,7 +190,7 @@ export default function AdminPanel() {
     return (
       <div className="min-h-screen bg-neutral-900 flex items-center justify-center">
         <div className="bg-white p-10 rounded-xl shadow-2xl w-full max-w-md text-center">
-          <h1 className="text-3xl font-extrabold mb-2">TUTU<span className="text-[#db2777]">.</span></h1>
+          <h1 className="text-3xl font-extrabold mb-2">TUTU<span className="text-[#db2777]">✮⋆</span></h1>
           <p className="text-neutral-500 mb-8 font-medium">Güvenli Yönetici Girişi</p>
           <form onSubmit={handleLogin}>
             <input type="password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} placeholder="Şifrenizi Girin" className="w-full px-4 py-3 rounded-lg border focus:border-pink-500 mb-4 text-center tracking-widest" required />
@@ -204,7 +204,7 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col md:flex-row">
       <div className="w-full md:w-64 md:min-h-screen bg-neutral-900 text-white flex flex-col">
-        <div className="p-6 border-b border-neutral-800"><h1 className="text-2xl font-extrabold tracking-tighter">TUTU<span className="text-[#db2777]">.</span></h1></div>
+        <div className="p-6 border-b border-neutral-800"><h1 className="text-2xl font-extrabold tracking-tighter">TUTU<span className="text-[#db2777]">✮⋆</span></h1></div>
         <nav className="flex-1 p-4 space-y-2">
           <button onClick={() => setActiveTab('add')} className={`w-full text-left px-4 py-3 rounded-md font-semibold transition ${activeTab === 'add' ? 'bg-[#db2777]' : 'text-neutral-400 hover:text-white'}`}>📦 Yeni Ürün Ekle</button>
           <button onClick={() => setActiveTab('list')} className={`w-full text-left px-4 py-3 rounded-md font-semibold transition ${activeTab === 'list' ? 'bg-[#db2777]' : 'text-neutral-400 hover:text-white'}`}>📋 Ürün Listesi</button>
