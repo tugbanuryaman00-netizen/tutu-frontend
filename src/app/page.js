@@ -555,6 +555,7 @@ const submitOrder = async (e) => {
                 </div>
               ))}
             </div>
+            )}
           </section>
         </>
       )}
