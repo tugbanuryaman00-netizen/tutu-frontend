@@ -360,7 +360,7 @@ export default function Home() {
           
           {/* LOGO */}
           <Link href="/" className="text-3xl font-black tracking-tighter text-neutral-900">
-            TUTU<span className="text-[#db2777]">.</span>
+            TUTU<span className="text-[#db2777]">✮⋆</span>
           </Link>
 
           {/* KATEGORİLER (Filtreleme Motorun Aynen Korundu) */}
@@ -471,7 +471,7 @@ export default function Home() {
           
           {/* Marka & Hakkında */}
           <div>
-            <h3 className="text-white text-2xl font-black mb-4 tracking-tighter">TUTU<span className="text-[#db2777]">.</span></h3>
+            <h3 className="text-white text-2xl font-black mb-4 tracking-tighter">TUTU<span className="text-[#db2777]">✮⋆</span></h3>
             <p className="text-sm text-neutral-400 leading-relaxed mb-6">
               Tarzınızı yansıtan, modern ve yenilikçi moda anlayışıyla her anınızda yanınızdayız. Kaliteyi hisset, tarzını yaşa.
             </p>
