@@ -549,9 +549,6 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* WHATSAPP BUTONUNU BURAYA EKLE (footer'ın hemen altına, Home'un kapanışından önce) */}
-      <WhatsAppButton />
-
     </div>
   );
 }
