@@ -3,6 +3,27 @@ import { supabase } from '../supabase';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+// src/components/WhatsAppButton.js
+export default function WhatsAppButton() {
+  const phoneNumber = "905331400419"; // Numarayı ülke kodu ile ekledik
+  const message = "Merhaba, TUTU Giyim'den bir ürün hakkında bilgi almak istiyorum.";
+  const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="fixed bottom-6 right-6 z-[100] flex items-center justify-center w-16 h-16 bg-[#25D366] text-white rounded-full shadow-[0_4px_15px_rgba(37,211,102,0.5)] hover:bg-[#128C7E] transition-all duration-300 transform hover:scale-110"
+      aria-label="WhatsApp ile İletişime Geç"
+    >
+      <svg className="w-9 h-9" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a5.49 5.49 0 0 1-2.793-.768l-.2-.116-2.073.544.553-2.016-.128-.212a5.49 5.49 0 0 1-.84-2.883c0-3.036 2.47-5.505 5.507-5.505 1.47 0 2.853.573 3.89 1.614a5.474 5.474 0 0 1 1.605 3.888c0 3.037-2.47 5.506-5.505 5.506z"/>
+      </svg>
+    </a>
+  );
+}
+
 // 1. ÖZEL TASARIM / ÖN SİPARİŞ VİTRİNİ
 export function PreOrderHero({ onAddToCart }) {
   const specialProducts = [
@@ -527,6 +548,9 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* WHATSAPP BUTONUNU BURAYA EKLE (footer'ın hemen altına, Home'un kapanışından önce) */}
+      <WhatsAppButton />
 
     </div>
   );
