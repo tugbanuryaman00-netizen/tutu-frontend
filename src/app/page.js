@@ -171,6 +171,7 @@ export default function Home() {
           items: cart,
           user_id: user ? user.id : null
         })
+        
 // ...
       });
       const data = await response.json();
