@@ -188,7 +188,7 @@ export default function AdminPanel() {
                 <thead>
                   <tr className="bg-neutral-50 text-neutral-600 border-b border-neutral-200 text-sm">
                     <th className="py-4 px-4 font-semibold">Sipariş</th>
-                    <th className="py-4 px-4 font-semibold">Müşteri</th>
+                    <th className="py-4 px-4 font-semibold w-1/3">Müşteri Bilgileri</th>
                     <th className="py-4 px-4 font-semibold">Ürünler</th>
                     <th className="py-4 px-4 font-semibold text-right">Durum</th>
                   </tr>
@@ -196,26 +196,32 @@ export default function AdminPanel() {
                 <tbody>
                   {orderList.map(order => (
                     <tr key={order.id} className="border-b border-neutral-100 hover:bg-neutral-50">
-                      <td className="py-4 px-4">
-                        <span className="block text-xs font-bold text-neutral-400 mb-1">#{order.id}</span>
+                      <td className="py-4 px-4 align-top">
+                        <span className="block text-xs font-bold text-neutral-400 mb-1">#{order.order_number || order.id}</span>
                         <span className="text-sm font-black text-neutral-900">{order.total_amount},00 TL</span>
                       </td>
-                      <td className="py-4 px-4">
-                        <p className="font-bold text-neutral-800 text-sm">{order.customer_name}</p>
-                        <p className="text-xs text-neutral-500">{order.contact_phone}</p>
+                      
+                      {/* MÜŞTERİ ADRES VE TELEFON KISMI GÜNCELLENDİ */}
+                      <td className="py-4 px-4 align-top">
+                        <p className="font-bold text-neutral-800 text-sm mb-1">{order.customer_name}</p>
+                        <p className="text-xs font-bold text-pink-600 mb-2">📞 {order.phone || 'Telefon Belirtilmemiş'}</p>
+                        <p className="text-xs text-neutral-500 leading-relaxed max-w-[250px] bg-neutral-100 p-2 rounded-md">
+                          📍 {order.address || 'Adres bilgisi bulunmuyor.'}
+                        </p>
                       </td>
-                      <td className="py-4 px-4">
+                      
+                      <td className="py-4 px-4 align-top">
                         <div className="flex flex-col gap-1 max-w-[150px]">
                           {order.cart_items && typeof order.cart_items === 'string' ? JSON.parse(order.cart_items).map((item, idx) => (
                             <div key={idx} className="text-xs text-neutral-600 bg-neutral-100 p-1 rounded truncate">{item.name}</div>
                           )) : null}
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-right">
+                      <td className="py-4 px-4 text-right align-top">
                         <select 
                           value={order.status || 'Hazırlanıyor'}
                           onChange={(e) => handleOrderStatusChange(order.id, e.target.value)}
-                          className={`border text-xs font-bold rounded-lg px-2 py-1 cursor-pointer focus:outline-none focus:ring-1 focus:ring-pink-500 ${order.status === 'Teslim Edildi' ? 'text-green-700 bg-green-50 border-green-200' : 'text-orange-700 bg-orange-50 border-orange-200'}`}
+                          className={`border text-xs font-bold rounded-lg px-2 py-2 cursor-pointer focus:outline-none focus:ring-1 focus:ring-pink-500 ${order.status === 'Teslim Edildi' ? 'text-green-700 bg-green-50 border-green-200' : 'text-orange-700 bg-orange-50 border-orange-200'}`}
                         >
                           {statusSteps.map(step => (
                             <option key={step} value={step} className="bg-white text-neutral-900">{step}</option>
