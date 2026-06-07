@@ -11,6 +11,10 @@ export default function AdminPanel() {
   const [productList, setProductList] = useState([]);
   const [logList, setLogList] = useState([]);
   
+  // ÜRÜN DÜZENLEME HAFIZASI
+  const [editingId, setEditingId] = useState(null);
+  const [editFormData, setEditFormData] = useState({ name: '', price: '' });
+
   // HATA VE YÜKLENİYOR DURUMLARI
   const [isProductsLoading, setIsProductsLoading] = useState(true);
   const [productFetchError, setProductFetchError] = useState('');
@@ -31,7 +35,6 @@ export default function AdminPanel() {
     try {
       const response = await fetch('https://tutu-backend-api.onrender.com/api/products');
       const data = await response.json();
-      
       if (data.success) {
         setProductList(data.data || []);
       } else {
@@ -39,8 +42,34 @@ export default function AdminPanel() {
       }
     } catch (error) {
       setProductFetchError('Sunucuya bağlanılamadı. Backend çalışmıyor olabilir.');
-    } finally {
+    } .finally(() => {
       setIsProductsLoading(false);
+    });
+  };
+
+  // ÜRÜN GÜNCELLEME MOTORU
+  const startEdit = (product) => {
+    setEditingId(product.id);
+    setEditFormData({ name: product.name, price: product.price });
+  };
+
+  const handleUpdateProduct = async (id) => {
+    try {
+      const response = await fetch(`https://tutu-backend-api.onrender.com/api/products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editFormData)
+      });
+      const data = await response.json();
+      if (data.success) {
+        setEditingId(null);
+        fetchProducts(); // Listeyi yenile
+        alert('Ürün başarıyla güncellendi!');
+      } else {
+        alert('Güncelleme hatası: ' + data.message);
+      }
+    } catch (error) {
+      alert('Sunucuyla bağlantı kurulamadı.');
     }
   };
 
@@ -104,7 +133,7 @@ export default function AdminPanel() {
       if (data.success) {
         setStatus({ type: 'success', message: 'Eklendi!' });
         setFormData({ name: '', price: '', category: 'GİYİM', tag: '', is_new: false, image_url: '', stock: '' });
-        fetchProducts(); // Arka planda listeyi güncelle
+        fetchProducts();
       }
     } catch (error) {
       setStatus({ type: 'error', message: 'Hata!' });
@@ -168,36 +197,18 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* ÜRÜN LİSTESİ (KUSURSUZ MANTIKLA YENİDEN YAZILDI) */}
+        {/* ÜRÜN LİSTESİ - DÜZENLEME MODU ENTEGRE EDİLDİ */}
         {activeTab === 'list' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold mb-6">Mevcut Ürünler</h2>
             
-            {/* DURUM 1: YÜKLENİYOR */}
             {isProductsLoading ? (
-              <div className="flex flex-col items-center justify-center py-10">
-                <div className="w-10 h-10 border-4 border-pink-100 border-t-[#db2777] rounded-full animate-spin"></div>
-                <p className="mt-4 text-neutral-500 font-medium">Veritabanına bağlanılıyor...</p>
-              </div>
-            ) : 
-            
-            /* DURUM 2: HATA VAR */
-            productFetchError ? (
-              <div className="p-5 bg-red-50 border border-red-100 text-red-600 rounded-xl font-bold">
-                ❌ Bir sorun oluştu: {productFetchError}
-              </div>
-            ) : 
-            
-            /* DURUM 3: LİSTE BOŞ */
-            productList.length === 0 ? (
-              <div className="p-10 bg-neutral-50 text-neutral-500 text-center rounded-xl border border-dashed border-neutral-200">
-                <span className="text-4xl block mb-3">📦</span>
-                Sistemde hiç ürün bulunmuyor. Yeni ürün ekledikçe burada listelenecektir.
-              </div>
-            ) : 
-            
-            /* DURUM 4: ÜRÜNLER GELDİ (TABLO) */
-            (
+              <p className="text-neutral-500">Ürünler yükleniyor...</p>
+            ) : productFetchError ? (
+              <div className="p-5 bg-red-50 text-red-600 rounded-xl font-bold">❌ Hata: {productFetchError}</div>
+            ) : productList.length === 0 ? (
+              <div className="p-10 bg-neutral-50 text-neutral-500 text-center rounded-xl border border-dashed">Sistemde ürün bulunmuyor.</div>
+            ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
@@ -210,11 +221,29 @@ export default function AdminPanel() {
                   <tbody className="text-sm">
                     {productList.map((p, idx) => (
                       <tr key={p.id || idx} className="border-b hover:bg-neutral-50 transition">
-                        <td className="py-4 px-4 font-bold text-neutral-800">{p.name}</td>
-                        <td className="py-4 px-4 text-[#db2777] font-black">{p.price} TL</td>
-                        <td className="py-4 px-4">
-                          <button onClick={() => handleDelete(p.id)} className="text-red-500 font-bold bg-red-50 px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white transition">Sil</button>
-                        </td>
+                        {editingId === p.id ? (
+                          <>
+                            <td className="py-3 px-4">
+                              <input type="text" value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-pink-500 font-bold" />
+                            </td>
+                            <td className="py-3 px-4">
+                              <input type="number" value={editFormData.price} onChange={e => setEditFormData({...editFormData, price: e.target.value})} className="w-28 px-3 py-2 border rounded-lg focus:outline-none focus:border-pink-500 font-bold" />
+                            </td>
+                            <td className="py-3 px-4 flex gap-2">
+                              <button onClick={() => handleUpdateProduct(p.id)} className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-green-700 transition">Kaydet</button>
+                              <button onClick={() => setEditingId(null)} className="bg-neutral-400 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-neutral-500 transition">İptal</button>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="py-4 px-4 font-bold text-neutral-800">{p.name}</td>
+                            <td className="py-4 px-4 text-[#db2777] font-black">{p.price} TL</td>
+                            <td className="py-4 px-4 flex gap-2">
+                              <button onClick={() => startEdit(p)} className="text-blue-600 font-bold bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition text-xs">Düzenle</button>
+                              <button onClick={() => handleDelete(p.id)} className="text-red-500 font-bold bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition text-xs">Sil</button>
+                            </td>
+                          </>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -227,14 +256,13 @@ export default function AdminPanel() {
         {/* LOGLAR */}
         {activeTab === 'logs' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
-            <h2 className="text-2xl font-bold mb-6">Sistem Logları</h2>
             <table className="w-full text-left text-sm"><tbody>
               {logList.map(log => (<tr key={log.id} className="border-b"><td className="py-3">{log.action}</td><td className="py-3">{log.details}</td></tr>))}
             </tbody></table>
           </div>
         )}
 
-        {/* SİPARİŞLER */}
+        {/* SİPARİŞLER - ÜRÜN DETAYI SÜTUNU TAMAMEN DÜZELTİLDİ */}
         {activeTab === 'orders' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold text-neutral-800 mb-6">Sipariş & Kargo Yönetimi</h2>
@@ -262,13 +290,31 @@ export default function AdminPanel() {
                           📍 {order.address || 'Adres bilgisi bulunmuyor.'}
                         </p>
                       </td>
+                      
+                      {/* SATIN ALINAN ÜRÜNLERİ GÖSTEREN GÜVENLİ MOTOR */}
                       <td className="py-4 px-4 align-top">
-                        <div className="flex flex-col gap-1 max-w-[150px]">
-                          {order.cart_items && typeof order.cart_items === 'string' ? JSON.parse(order.cart_items).map((item, idx) => (
-                            <div key={idx} className="text-xs text-neutral-600 bg-neutral-100 p-1 rounded truncate">{item.name}</div>
-                          )) : null}
+                        <div className="flex flex-col gap-1.5 max-w-[180px]">
+                          {(() => {
+                            let itemsArray = [];
+                            if (order.items) {
+                              if (typeof order.items === 'string') {
+                                try { itemsArray = JSON.parse(order.items); } catch (e) { itemsArray = []; }
+                              } else if (Array.isArray(order.items)) {
+                                itemsArray = order.items;
+                              }
+                            }
+                            return itemsArray.length > 0 ? itemsArray.map((item, idx) => (
+                              <div key={idx} className="text-xs text-neutral-700 bg-neutral-50 border p-1.5 rounded-md leading-tight">
+                                <span className="font-bold text-neutral-900 block truncate">{item.name}</span>
+                                <span className="text-[10px] text-neutral-500 block mt-0.5">
+                                  {item.selectedColor || '-'} / {item.selectedSize || '-'} | {item.quantity || 1} Adet
+                                </span>
+                              </div>
+                            )) : <span className="text-xs text-neutral-400 italic">Ürün detayı yok</span>;
+                          })()}
                         </div>
                       </td>
+                      
                       <td className="py-4 px-4 text-right align-top">
                         <select 
                           value={order.status || 'Hazırlanıyor'}
