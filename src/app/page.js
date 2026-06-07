@@ -73,7 +73,27 @@ export default function Home() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true); 
   const [activeCategory, setActiveCategory] = useState('TÜMÜ');
-  const [cart, setCart] = useState([]);
+ // Sepeti boş başlatma, sayfa yüklenince tarayıcı hafızasına bak!
+  const [cart, setCart] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('tutu_cart');
+      if (saved) return JSON.parse(saved);
+    }
+    return [];
+  });
+
+  // Sepette her değişiklik olduğunda (ürün ekleme/çıkarma) hafızayı güncelle
+  useEffect(() => {
+    localStorage.setItem('tutu_cart', JSON.stringify(cart));
+  }, [cart]);
+
+  // URL'de "cart=open" varsa Sepet Çekmecesini otomatik aç
+  useEffect(() => {
+    if (window.location.search.includes('cart=open')) {
+      setIsCartOpen(true);
+      window.history.replaceState({}, '', '/'); // Adres çubuğunu temizle
+    }
+  }, []);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   // --- GOOGLE GİRİŞ VE OTURUM MOTORU ---
@@ -145,6 +165,7 @@ export default function Home() {
       const data = await response.json();
       if (data.success) {
         alert("Siparişiniz başarıyla alındı! Siparişlerim panelinden kargo sürecini takip edebilirsiniz.");
+        localStorage.removeItem('tutu_cart'); // Sipariş verilince hafızayı sıfırla
         setCart([]); 
         setIsCartOpen(false);
         setIsCheckoutMode(false);

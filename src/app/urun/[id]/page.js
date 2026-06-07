@@ -39,6 +39,22 @@ export default function UrunDetay() {
     );
   }
 
+  // Ürünü tarayıcı hafızasına (Sepete) kaydet ve ana sayfaya yönlendir
+  const handleAddToCart = () => {
+    const existingCart = JSON.parse(localStorage.getItem('tutu_cart')) || [];
+    const cartItem = {
+      ...product,
+      selectedSize: mainSize,
+      selectedColor: mainColor,
+      uniqueId: product.id + '-' + mainSize + '-' + mainColor + '-' + Math.random()
+    };
+    existingCart.push(cartItem);
+    localStorage.setItem('tutu_cart', JSON.stringify(existingCart));
+    
+    // Müşteriyi ana sayfaya gönder ve sepet çekmecesini otomatik aç
+    window.location.href = '/?cart=open';
+  };
+
   if (!product) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
@@ -96,7 +112,7 @@ export default function UrunDetay() {
               )}
             </div>
             
-            <button className="w-full mt-6 bg-neutral-900 text-white px-12 py-5 font-bold tracking-widest text-sm hover:bg-pink-600 shadow-xl transition-all duration-300">
+<button onClick={handleAddToCart} className="w-full mt-6 bg-neutral-900 text-white px-12 py-5 font-bold tracking-widest text-sm hover:bg-pink-600 shadow-xl transition-all duration-300">
               SEPETE EKLE
             </button>
           </div>
