@@ -210,7 +210,7 @@ const submitOrder = async (e) => {
     ? products 
     : products.filter(p => p.category === activeCategory);
 
-  if (isLoading) {
+ {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
         <div className="w-16 h-16 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin"></div>
@@ -529,9 +529,16 @@ const submitOrder = async (e) => {
               <span className="text-sm font-medium text-neutral-500">{filteredProducts.length} Ürün Listeleniyor</span>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
-              {filteredProducts.map((product) => (
-                <div key={product.id} onClick={() => setSelectedProduct(product)} className="group flex flex-col cursor-pointer">
+    {/* EĞER YÜKLENİYORSA ÜRÜN KISMINDA ANİMASYON GÖSTER, YÜKLENDİYSE ÜRÜNLERİ DİZ */}
+            {isLoading ? (
+              <div className="py-20 flex flex-col items-center justify-center w-full">
+                <div className="w-10 h-10 border-4 border-pink-100 border-t-pink-600 rounded-full animate-spin mb-4"></div>
+                <p className="text-neutral-400 font-bold tracking-widest text-xs uppercase">Koleksiyon Yükleniyor...</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
+                {filteredProducts.map((product) => (
+                  <div key={product.id} onClick={() => setSelectedProduct(product)} className="group flex flex-col cursor-pointer">
                   <div className="bg-neutral-100 aspect-[3/4] mb-4 overflow-hidden relative border border-gray-50 flex-shrink-0">
                     {product.image_url ? (
                       <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-in-out" />
