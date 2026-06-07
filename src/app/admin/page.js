@@ -29,7 +29,7 @@ export default function AdminPanel() {
     else alert('Hatalı Şifre!');
   };
 
-  const fetchProducts = async () => {
+const fetchProducts = async () => {
     setIsProductsLoading(true);
     setProductFetchError('');
     try {
@@ -42,9 +42,9 @@ export default function AdminPanel() {
       }
     } catch (error) {
       setProductFetchError('Sunucuya bağlanılamadı. Backend çalışmıyor olabilir.');
-    } .finally(() => {
+    } finally {
       setIsProductsLoading(false);
-    });
+    }
   };
 
   // ÜRÜN GÜNCELLEME MOTORU
