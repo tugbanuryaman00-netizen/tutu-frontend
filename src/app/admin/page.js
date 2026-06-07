@@ -12,7 +12,7 @@ export default function AdminPanel() {
   const [logList, setLogList] = useState([]);
   
   // HATA VE YÜKLENİYOR DURUMLARI
-  const [isProductsLoading, setIsProductsLoading] = useState(false);
+  const [isProductsLoading, setIsProductsLoading] = useState(true);
   const [productFetchError, setProductFetchError] = useState('');
   
   // SİPARİŞ HAFIZASI
@@ -31,16 +31,14 @@ export default function AdminPanel() {
     try {
       const response = await fetch('https://tutu-backend-api.onrender.com/api/products');
       const data = await response.json();
-      console.log("Backend'den gelen ürün verisi:", data); // F12 Konsol kontrolü için
       
       if (data.success) {
         setProductList(data.data || []);
       } else {
-        setProductFetchError(data.message || 'Ürünler yüklenirken bir sorun oluştu.');
+        setProductFetchError(data.message || 'Ürünler alınamadı.');
       }
     } catch (error) {
-      console.error("Ürünler çekilemedi:", error);
-      setProductFetchError('Sunucuya bağlanılamadı. Backend ayakta mı?');
+      setProductFetchError('Sunucuya bağlanılamadı. Backend çalışmıyor olabilir.');
     } finally {
       setIsProductsLoading(false);
     }
@@ -51,20 +49,15 @@ export default function AdminPanel() {
       const response = await fetch('https://tutu-backend-api.onrender.com/api/logs');
       const data = await response.json();
       if (data.success) setLogList(data.data);
-    } catch (error) {
-      console.error("Loglar çekilemedi:", error);
-    }
+    } catch (error) {}
   };
 
-  // SİPARİŞ MOTORU
   const fetchOrders = async () => {
     try {
       const response = await fetch('https://tutu-backend-api.onrender.com/api/orders/all');
       const data = await response.json();
       if (data.success) setOrderList(data.data);
-    } catch (error) {
-      console.error("Siparişler çekilemedi:", error);
-    }
+    } catch (error) {}
   };
 
   const handleOrderStatusChange = async (orderId, newStatus) => {
@@ -81,13 +74,11 @@ export default function AdminPanel() {
       } else {
         alert("Hata: " + data.message);
       }
-    } catch (error) {
-      console.error("Durum güncellenemedi:", error);
-    }
+    } catch (error) {}
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Silmek istediğinize emin misiniz?")) return;
+    if (!confirm("Bu ürünü silmek istediğinize emin misiniz?")) return;
     try {
       const response = await fetch(`https://tutu-backend-api.onrender.com/api/products/${id}`, { method: 'DELETE' });
       const data = await response.json();
@@ -113,7 +104,7 @@ export default function AdminPanel() {
       if (data.success) {
         setStatus({ type: 'success', message: 'Eklendi!' });
         setFormData({ name: '', price: '', category: 'GİYİM', tag: '', is_new: false, image_url: '', stock: '' });
-        if (activeTab === 'list') fetchProducts(); // Liste sekmesiyse yenile
+        fetchProducts(); // Arka planda listeyi güncelle
       }
     } catch (error) {
       setStatus({ type: 'error', message: 'Hata!' });
@@ -156,6 +147,7 @@ export default function AdminPanel() {
       </div>
 
       <div className="flex-1 p-4 md:p-10 overflow-y-auto">
+        
         {/* YENİ ÜRÜN */}
         {activeTab === 'add' && (
           <div className="max-w-2xl bg-white p-5 md:p-8 rounded-xl shadow-sm border border-neutral-100">
@@ -176,44 +168,58 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* ÜRÜN LİSTESİ */}
+        {/* ÜRÜN LİSTESİ (KUSURSUZ MANTIKLA YENİDEN YAZILDI) */}
         {activeTab === 'list' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold mb-6">Mevcut Ürünler</h2>
             
-            {isProductsLoading && <p className="text-neutral-500 font-medium">Ürünler yükleniyor...</p>}
+            {/* DURUM 1: YÜKLENİYOR */}
+            {isProductsLoading ? (
+              <div className="flex flex-col items-center justify-center py-10">
+                <div className="w-10 h-10 border-4 border-pink-100 border-t-[#db2777] rounded-full animate-spin"></div>
+                <p className="mt-4 text-neutral-500 font-medium">Veritabanına bağlanılıyor...</p>
+              </div>
+            ) : 
             
-            {productFetchError && (
-              <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm font-bold mb-4">
-                ❌ Hata: {productFetchError}
+            /* DURUM 2: HATA VAR */
+            productFetchError ? (
+              <div className="p-5 bg-red-50 border border-red-100 text-red-600 rounded-xl font-bold">
+                ❌ Bir sorun oluştu: {productFetchError}
               </div>
-            )}
-
-            {!isProductsLoading && !productFetchError && productList.length === 0 ? (
-              <div className="p-8 bg-neutral-50 text-neutral-500 text-center rounded-xl border border-dashed">
-                Tabloda listelenecek ürün bulunamadı. Lütfen "Yeni Ürün Ekle" sekmesinden ürün ekleyin.
+            ) : 
+            
+            /* DURUM 3: LİSTE BOŞ */
+            productList.length === 0 ? (
+              <div className="p-10 bg-neutral-50 text-neutral-500 text-center rounded-xl border border-dashed border-neutral-200">
+                <span className="text-4xl block mb-3">📦</span>
+                Sistemde hiç ürün bulunmuyor. Yeni ürün ekledikçe burada listelenecektir.
               </div>
-            ) : (
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b text-sm font-semibold text-neutral-500">
-                    <th className="py-3 px-4">Ürün Adı</th>
-                    <th className="py-3 px-4">Fiyat</th>
-                    <th className="py-3 px-4">İşlem</th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {productList.map(p => (
-                    <tr key={p.id} className="border-b hover:bg-neutral-50">
-                      <td className="py-3 px-4 font-medium text-neutral-800">{p.name}</td>
-                      <td className="py-3 px-4 text-[#db2777] font-bold">{p.price} TL</td>
-                      <td className="py-3 px-4">
-                        <button onClick={() => handleDelete(p.id)} className="text-red-500 font-bold bg-red-50 px-3 py-1 rounded hover:bg-red-100 transition">Sil</button>
-                      </td>
+            ) : 
+            
+            /* DURUM 4: ÜRÜNLER GELDİ (TABLO) */
+            (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b text-sm font-semibold text-neutral-500">
+                      <th className="py-3 px-4">Ürün Adı</th>
+                      <th className="py-3 px-4">Fiyat</th>
+                      <th className="py-3 px-4">İşlem</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="text-sm">
+                    {productList.map((p, idx) => (
+                      <tr key={p.id || idx} className="border-b hover:bg-neutral-50 transition">
+                        <td className="py-4 px-4 font-bold text-neutral-800">{p.name}</td>
+                        <td className="py-4 px-4 text-[#db2777] font-black">{p.price} TL</td>
+                        <td className="py-4 px-4">
+                          <button onClick={() => handleDelete(p.id)} className="text-red-500 font-bold bg-red-50 px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white transition">Sil</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         )}
@@ -221,6 +227,7 @@ export default function AdminPanel() {
         {/* LOGLAR */}
         {activeTab === 'logs' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
+            <h2 className="text-2xl font-bold mb-6">Sistem Logları</h2>
             <table className="w-full text-left text-sm"><tbody>
               {logList.map(log => (<tr key={log.id} className="border-b"><td className="py-3">{log.action}</td><td className="py-3">{log.details}</td></tr>))}
             </tbody></table>
@@ -285,4 +292,3 @@ export default function AdminPanel() {
     </div>
   );
 }
-
