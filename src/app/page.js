@@ -162,14 +162,16 @@ export default function Home() {
       const response = await fetch('https://tutu-backend-api.onrender.com/api/payment/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+// ... submitOrder fonksiyonu içinde ...
         body: JSON.stringify({ 
           customer_name: checkoutForm.name, 
-          phone: checkoutForm.phone, 
-          address: fullShippingAddress,
-          total_amount: Number(cartTotal), // Fiyatın SAYI olmasını GARANTİLEDİK!
+          phone: checkoutForm.phone,       // Yeni ekledik
+          address: fullShippingAddress,    // Yeni ekledik!
+          total_amount: Number(cartTotal), 
           items: cart,
           user_id: user ? user.id : null
         })
+// ...
       });
       const data = await response.json();
       
