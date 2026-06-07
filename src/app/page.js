@@ -1,3 +1,11 @@
+export const metadata = {
+  title: 'TUTU Giyim | Modern Giyim ve Moda',
+  description: 'TUTU Giyim ile en trend giyim, çanta ve aksesuar modellerini keşfedin. Güvenli alışveriş ve hızlı teslimat avantajı.',
+  keywords: 'tutu giyim, kadın giyim, moda, trend elbiseler, şık çanta, yaman medya e-ticaret',
+  authors: [{ name: 'Yaman Medya' }],
+  robots: 'index, follow',
+};
+
 "use client";
 import { supabase } from '../supabase';
 import React, { useState, useEffect } from 'react';
@@ -171,7 +179,7 @@ export default function Home() {
           items: cart,
           user_id: user ? user.id : null
         })
-        
+
 // ...
       });
       const data = await response.json();
@@ -349,33 +357,62 @@ export default function Home() {
       )}
 
       {/* ÜST NAVBAR */}
-      <header className="bg-white border-b border-gray-100 py-4 sticky top-0 z-50">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <Link href="/" className="text-3xl font-extrabold tracking-tighter text-neutral-900 flex items-center gap-1 cursor-pointer">
-            TUTU<span className="text-pink-600">✮⋆˙</span>
-          </Link>
+      {/* ÜST KAMPANYA BANDI */}
+      <div className="bg-neutral-900 text-white text-[11px] font-bold tracking-widest uppercase py-2 text-center">
+        İlk Siparişe Özel %15 İndirim | 500 TL Üzeri Kargo Bedava
+      </div>
+
+      {/* MODERN HEADER */}
+      <header className="bg-white border-b border-neutral-200 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
           
+          {/* LOGO */}
+          <Link href="/" className="text-3xl font-black tracking-tighter text-neutral-900">
+            TUTU<span className="text-[#db2777]">.</span>
+          </Link>
+
+          {/* KATEGORİLER (Filtreleme Motorun Aynen Korundu) */}
           <nav className="hidden md:flex space-x-8 font-medium text-sm text-neutral-500">
             {['TÜMÜ', 'GİYİM', 'ÇANTA', 'AKSESUAR'].map((cat) => (
-              <button key={cat} onClick={() => { setActiveCategory(cat); }} className={`transition duration-300 ${activeCategory === cat ? 'text-pink-600 font-bold border-b-2 border-pink-600' : 'hover:text-pink-600'}`}>
+              <button key={cat} onClick={() => { setActiveCategory(cat); }} className={`transition duration-300 ${activeCategory === cat ? 'text-[#db2777] font-bold border-b-2 border-[#db2777]' : 'hover:text-[#db2777]'}`}>
                 {cat}
               </button>
             ))}
           </nav>
 
-          <div className="flex space-x-5 text-neutral-800 items-center">
-            <button onClick={() => user ? window.location.href='/hesabim' : setIsAuthModalOpen(true)} className="flex items-center gap-2 hover:text-pink-600 transition font-semibold text-sm mr-2">
-              <svg fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"></path></svg>
-              <span className="hidden md:inline">{user ? 'Hesabım' : 'Giriş Yap'}</span>
+          {/* MODERN İKONLAR (GİRİŞ/HESABIM VE SEPET) */}
+          <div className="flex items-center gap-6">
+            
+            {/* Hesabım İkonu */}
+            <button onClick={() => user ? window.location.href='/hesabim' : setIsAuthModalOpen(true)} className="flex flex-col items-center text-neutral-600 hover:text-[#db2777] transition group">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1 group-hover:-translate-y-0.5 transition-transform">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span className="text-[10px] font-bold">{user ? 'Hesabım' : 'Giriş Yap'}</span>
             </button>
 
-            <button onClick={() => setIsCartOpen(true)} className="hover:text-pink-600 transition relative transform hover:scale-110">
-              <svg fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"></path></svg>
-              {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-pink-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">{cart.length}</span>}
+            {/* Sepet İkonu */}
+            <button onClick={() => setIsCartOpen(true)} className="flex flex-col items-center text-neutral-600 hover:text-[#db2777] transition group relative">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1 group-hover:-translate-y-0.5 transition-transform">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
+                <path d="M3 6h18"></path>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+              <span className="text-[10px] font-bold">Sepetim</span>
+              
+              {/* Sepet Dinamik Rozeti */}
+              {cart.length > 0 && (
+                <span className="absolute -top-1 -right-2 bg-[#db2777] text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
+                  {cart.length}
+                </span>
+              )}
             </button>
+
           </div>
         </div>
       </header>
+
 
       {/* 1. EN ÜSTTE HERO BANNER */}
       <section className="relative bg-gradient-to-b from-pink-50/30 to-white py-24 border-b border-gray-100">
@@ -435,6 +472,69 @@ export default function Home() {
           </div>
         )}
       </section>
+
+{/* 4. KURUMSAL E-TİCARET FOOTER (YAMAN MEDYA HAKLARIYLA) */}
+      <footer className="bg-neutral-900 text-neutral-300 pt-16 pb-8 border-t border-neutral-800 mt-20">
+        <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-10">
+          
+          {/* Marka & Hakkında */}
+          <div>
+            <h3 className="text-white text-2xl font-black mb-4 tracking-tighter">TUTU<span className="text-[#db2777]">.</span></h3>
+            <p className="text-sm text-neutral-400 leading-relaxed mb-6">
+              Tarzınızı yansıtan, modern ve yenilikçi moda anlayışıyla her anınızda yanınızdayız. Kaliteyi hisset, tarzını yaşa.
+            </p>
+          </div>
+
+          {/* Müşteri Hizmetleri */}
+          <div>
+            <h4 className="text-white font-bold mb-5 uppercase tracking-wider text-xs">Müşteri Hizmetleri</h4>
+            <ul className="space-y-3 text-sm">
+              <li><Link href="#" className="hover:text-[#db2777] transition">Sipariş Takibi</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition">Teslimat ve Kargo</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition">İade ve Değişim Şartları</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition">Beden Tablosu</Link></li>
+            </ul>
+          </div>
+
+          {/* Kurumsal */}
+          <div>
+            <h4 className="text-white font-bold mb-5 uppercase tracking-wider text-xs">Kurumsal Bilgiler</h4>
+            <ul className="space-y-3 text-sm">
+              <li><Link href="#" className="hover:text-[#db2777] transition">Hakkımızda</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition">Mesafeli Satış Sözleşmesi</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition">Gizlilik ve Çerez Politikası</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition">İletişim</Link></li>
+            </ul>
+          </div>
+
+          {/* Güvenlik & İletişim */}
+          <div>
+            <h4 className="text-white font-bold mb-5 uppercase tracking-wider text-xs">Güvenli Alışveriş</h4>
+            <p className="text-xs text-neutral-400 mb-4">256-bit SSL sertifikası ile %100 güvenli alışveriş altyapısı.</p>
+            <div className="flex gap-2 opacity-50 grayscale">
+              <div className="w-10 h-6 bg-white rounded border border-neutral-700 flex items-center justify-center text-[8px] font-bold text-neutral-900">VISA</div>
+              <div className="w-10 h-6 bg-white rounded border border-neutral-700 flex items-center justify-center text-[8px] font-bold text-neutral-900">MC</div>
+              <div className="w-10 h-6 bg-white rounded border border-neutral-700 flex items-center justify-center text-[8px] font-bold text-neutral-900">TROY</div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* YASAL UYARI VE YAMAN MEDYA HAKLARI */}
+        <div className="max-w-6xl mx-auto px-4 mt-16 pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-neutral-500 font-medium">
+            © 2026 TUTU Giyim. Tüm Hakları <span className="font-bold text-white">Yaman Medya</span>'ya Aittir.
+          </p>
+          <div className="flex gap-4">
+            <Link href="#" className="text-neutral-500 hover:text-white transition">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+            </Link>
+            <Link href="#" className="text-neutral-500 hover:text-white transition">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
+            </Link>
+          </div>
+        </div>
+      </footer>
 
     </div>
   );

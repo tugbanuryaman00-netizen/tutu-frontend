@@ -1,8 +1,11 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "TUTU Giyim | Premium Kadın Butik",
-  description: "Zarafeti Keşfet - En yeni sezon kadın giyim koleksiyonu",
+  title: 'TUTU Giyim | Modern Giyim ve Moda',
+  description: 'TUTU Giyim ile en trend giyim, çanta ve aksesuar modellerini keşfedin. Güvenli alışveriş ve hızlı teslimat avantajı.',
+  keywords: 'tutu giyim, kadın giyim, moda, trend elbiseler, şık çanta, yaman medya e-ticaret',
+  authors: [{ name: 'Yaman Medya' }],
+  robots: 'index, follow',
 };
 
 export default function RootLayout({ children }) {
