@@ -73,7 +73,8 @@ export default function Home() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true); 
   const [activeCategory, setActiveCategory] = useState('TÜMÜ');
- // Sepeti boş başlatma, sayfa yüklenince tarayıcı hafızasına bak!
+  
+  // Sepeti boş başlatma, sayfa yüklenince tarayıcı hafızasına bak!
   const [cart, setCart] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('tutu_cart');
@@ -82,7 +83,7 @@ export default function Home() {
     return [];
   });
 
-  // Sepette her değişiklik olduğunda (ürün ekleme/çıkarma) hafızayı güncelle
+  // Sepette her değişiklik olduğunda hafızayı güncelle
   useEffect(() => {
     localStorage.setItem('tutu_cart', JSON.stringify(cart));
   }, [cart]);
@@ -91,7 +92,7 @@ export default function Home() {
   useEffect(() => {
     if (window.location.search.includes('cart=open')) {
       setIsCartOpen(true);
-      window.history.replaceState({}, '', '/'); // Adres çubuğunu temizle
+      window.history.replaceState({}, '', '/'); 
     }
   }, []);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -145,8 +146,16 @@ export default function Home() {
     setIsCartOpen(true);
   };
 
+  // İŞTE BÜTÜN HATALARI ÇÖZEN YENİ VE GÜVENLİ SİPARİŞ MOTORU
   const submitOrder = async (e) => {
     e.preventDefault();
+    
+    // Güvenlik: Adres eksikse durdur
+    if (!checkoutForm.city || !checkoutForm.address) {
+      alert("Lütfen adres bilgilerinizi eksiksiz doldurun.");
+      return;
+    }
+
     const fullShippingAddress = `${checkoutForm.city} / ${checkoutForm.district} / ${checkoutForm.neighborhood} Mah. - Açık Adres: ${checkoutForm.address}`;
 
     try {
@@ -157,12 +166,13 @@ export default function Home() {
           customer_name: checkoutForm.name, 
           phone: checkoutForm.phone, 
           address: fullShippingAddress,
-          total_amount: cartTotal, 
+          total_amount: Number(cartTotal), // Fiyatın SAYI olmasını GARANTİLEDİK!
           items: cart,
           user_id: user ? user.id : null
         })
       });
       const data = await response.json();
+      
       if (data.success) {
         alert("Siparişiniz başarıyla alındı! Siparişlerim panelinden kargo sürecini takip edebilirsiniz.");
         localStorage.removeItem('tutu_cart'); // Sipariş verilince hafızayı sıfırla
@@ -170,9 +180,11 @@ export default function Home() {
         setIsCartOpen(false);
         setIsCheckoutMode(false);
         setCheckoutForm({ name: '', phone: '', city: '', district: '', neighborhood: '', address: '', saveAddress: false });
+      } else {
+        alert("Sipariş oluşturulamadı: " + data.message);
       }
     } catch (error) {
-      alert("Bağlantı hatası yaşandı, lütfen tekrar deneyin.");
+      alert("Bağlantı hatası yaşandı, lütfen internetinizi kontrol edip tekrar deneyin.");
     }
   };
 
@@ -180,7 +192,8 @@ export default function Home() {
     setCart(cart.filter((item) => item.uniqueId !== uniqueId));
   };
 
-  const cartTotal = cart.reduce((total, item) => total + item.price, 0);
+  // İŞTE İKİNCİ ÇÖZÜM: Fiyat metne dönüşmüşse bile onu zorla Sayıya (Number) çeviriyor
+  const cartTotal = cart.reduce((total, item) => total + Number(item.price || 0), 0);
 
   const filteredProducts = activeCategory === 'TÜMÜ' 
     ? products 
