@@ -210,14 +210,6 @@ const submitOrder = async (e) => {
     ? products 
     : products.filter(p => p.category === activeCategory);
 
- {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <div className="w-16 h-16 border-4 border-pink-200 border-t-pink-600 rounded-full animate-spin"></div>
-        <p className="mt-4 text-neutral-500 font-medium tracking-widest uppercase text-sm">TUTU Altyapısı Hazırlanıyor...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 relative">
