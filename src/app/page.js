@@ -1,11 +1,3 @@
-export const metadata = {
-  title: 'TUTU Giyim | Modern Giyim ve Moda',
-  description: 'TUTU Giyim ile en trend giyim, çanta ve aksesuar modellerini keşfedin. Güvenli alışveriş ve hızlı teslimat avantajı.',
-  keywords: 'tutu giyim, kadın giyim, moda, trend elbiseler, şık çanta, yaman medya e-ticaret',
-  authors: [{ name: 'Yaman Medya' }],
-  robots: 'index, follow',
-};
-
 "use client";
 import { supabase } from '../supabase';
 import React, { useState, useEffect } from 'react';
