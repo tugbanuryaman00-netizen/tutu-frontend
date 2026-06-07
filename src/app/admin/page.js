@@ -11,113 +11,149 @@ export default function AdminPanel() {
   const [status, setStatus] = useState({ type: '', message: '' });
   const [productList, setProductList] = useState([]);
   const [logList, setLogList] = useState([]);
-  const [orderList, setOrderList] = useState([]);
   
   const [editingId, setEditingId] = useState(null);
   const [editFormData, setEditFormData] = useState({ name: '', price: '' });
+
   const [isProductsLoading, setIsProductsLoading] = useState(true);
+  const [productFetchError, setProductFetchError] = useState('');
+  const [orderList, setOrderList] = useState([]);
   const statusSteps = ['Hazırlanıyor', 'Kargoya Verildi', 'Kargo Şubesinde', 'Dağıtıma Çıktı', 'Teslim Edildi', 'İptal Edildi'];
 
   // Sayfa açıldığında hafızada yetki var mı kontrol et
   useEffect(() => {
     const token = sessionStorage.getItem('tutu_admin_token');
-    if (token) { setAdminToken(token); setIsAuthenticated(true); }
+    if (token) {
+      setAdminToken(token);
+      setIsAuthenticated(true);
+    }
   }, []);
 
+  // Giriş Yapma
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://tutu-backend-api.onrender.com/api/logs', { headers: { 'Authorization': passwordInput } });
-      if (response.status === 403) { alert('Hatalı Şifre!'); } 
-      else {
+      const response = await fetch('https://tutu-backend-api.onrender.com/api/logs', {
+        headers: { 'Authorization': passwordInput }
+      });
+      
+      if (response.status === 403) {
+        alert('Hatalı Şifre!');
+      } else {
         sessionStorage.setItem('tutu_admin_token', passwordInput);
-        setAdminToken(passwordInput); setIsAuthenticated(true);
+        setAdminToken(passwordInput);
+        setIsAuthenticated(true);
       }
-    } catch (error) { alert("Sunucuya bağlanılamadı."); }
+    } catch (error) {
+      alert("Sunucuya bağlanılamadı.");
+    }
   };
 
   const handleLogout = () => {
     sessionStorage.removeItem('tutu_admin_token');
-    setIsAuthenticated(false); setAdminToken(''); window.location.reload();
+    setIsAuthenticated(false);
+    setAdminToken('');
+    window.location.reload();
   };
 
   const fetchProducts = async () => {
     setIsProductsLoading(true);
+    setProductFetchError('');
     try {
       const response = await fetch('https://tutu-backend-api.onrender.com/api/products');
       const data = await response.json();
       if (data.success) setProductList(data.data || []);
-    } catch (error) {} 
-    finally { setIsProductsLoading(false); }
+      else setProductFetchError(data.message || 'Ürünler alınamadı.');
+    } catch (error) {
+      setProductFetchError('Sunucuya bağlanılamadı.');
+    } finally {
+      setIsProductsLoading(false);
+    }
   };
 
   const fetchLogs = async () => {
     try {
-      const res = await fetch('https://tutu-backend-api.onrender.com/api/logs', { headers: { 'Authorization': adminToken } });
-      const data = await res.json();
+      const response = await fetch('https://tutu-backend-api.onrender.com/api/logs', {
+        headers: { 'Authorization': adminToken }
+      });
+      const data = await response.json();
       if (data.success) setLogList(data.data);
     } catch (error) {}
   };
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('https://tutu-backend-api.onrender.com/api/orders/all', { headers: { 'Authorization': adminToken } });
-      const data = await res.json();
-      if (data.success) setOrderList(data.data);
-    } catch (error) {}
-  };
-
-  const handleOrderStatusChange = async (orderId, newStatus) => {
-    try {
-      const res = await fetch(`https://tutu-backend-api.onrender.com/api/orders/${orderId}/status`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': adminToken },
-        body: JSON.stringify({ status: newStatus })
+      const response = await fetch('https://tutu-backend-api.onrender.com/api/orders/all', {
+        headers: { 'Authorization': adminToken }
       });
-      const data = await res.json();
-      if (data.success) setOrderList(orderList.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      const data = await response.json();
+      if (data.success) setOrderList(data.data);
     } catch (error) {}
   };
 
   const handleUpdateProduct = async (id) => {
     try {
-      const res = await fetch(`https://tutu-backend-api.onrender.com/api/products/${id}`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': adminToken },
+      const response = await fetch(`https://tutu-backend-api.onrender.com/api/products/${id}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': adminToken
+        },
         body: JSON.stringify(editFormData)
       });
-      const data = await res.json();
-      if (data.success) { setEditingId(null); fetchProducts(); }
+      const data = await response.json();
+      if (data.success) {
+        setEditingId(null);
+        fetchProducts();
+        alert('Ürün güncellendi!');
+      } else alert('Hata: ' + data.message);
+    } catch (error) { alert('Bağlantı hatası.'); }
+  };
+
+  const handleOrderStatusChange = async (orderId, newStatus) => {
+    try {
+      const response = await fetch(`https://tutu-backend-api.onrender.com/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': adminToken
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setOrderList(orderList.map(order => order.id === orderId ? { ...order, status: newStatus } : order));
+      } else alert("Hata: " + data.message);
     } catch (error) {}
   };
 
   const handleDelete = async (id) => {
     if (!confirm("Bu ürünü silmek istediğinize emin misiniz?")) return;
     try {
-      const res = await fetch(`https://tutu-backend-api.onrender.com/api/products/${id}`, { method: 'DELETE', headers: { 'Authorization': adminToken } });
-      const data = await res.json();
+      const response = await fetch(`https://tutu-backend-api.onrender.com/api/products/${id}`, { 
+        method: 'DELETE',
+        headers: { 'Authorization': adminToken }
+      });
+      const data = await response.json();
       if (data.success) fetchProducts();
+      else alert("Yetkiniz reddedildi!");
     } catch (error) {}
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
-  };
-
   // ==========================================
-  // CLOUDINARY RESİM YÜKLEME MOTORU
+  // YENİ EKLENEN: CLOUDINARY RESİM YÜKLEME
   // ==========================================
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    setStatus({ type: 'loading', message: 'Resim Cloudinary sunucusuna yükleniyor ve optimize ediliyor...' });
+    setStatus({ type: 'loading', message: 'Resim Cloudinary sunucusuna yükleniyor...' });
 
     const uploadData = new FormData();
     uploadData.append('file', file);
-    uploadData.append('upload_preset', 'tutu_uploads'); // Cloudinary'de oluşturduğumuz Unsigned Preset Adı
+    uploadData.append('upload_preset', 'tutu_uploads');
 
-    // DİKKAT: SENIN_CLOUD_NAME_BURAYA yazan yeri kendi Cloud Name'in ile değiştir!
-const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/denlwno3i/image/upload';
+    const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/denlwno3i/image/upload';
 
     try {
       const res = await fetch(cloudinaryUrl, {
@@ -127,9 +163,8 @@ const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/denlwno3i/image/upload';
       const data = await res.json();
 
       if (data.secure_url) {
-        // Yükleme başarılı, kalıcı linki form datasına ekle
         setFormData({ ...formData, image_url: data.secure_url });
-        setStatus({ type: 'success', message: 'Resim başarıyla yüklendi! Artık ürünü ekleyebilirsiniz.' });
+        setStatus({ type: 'success', message: 'Resim başarıyla yüklendi! Ürünü ekleyebilirsiniz.' });
       } else {
         setStatus({ type: 'error', message: 'Resim yükleme hatası. Cloudinary ayarlarınızı kontrol edin.' });
       }
@@ -141,25 +176,46 @@ const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/denlwno3i/image/upload';
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.image_url) {
-      setStatus({ type: 'error', message: 'Lütfen önce bir ürün resmi yükleyin!' });
+      setStatus({ type: 'error', message: 'Lütfen önce bir ürün fotoğrafı yükleyin!' });
       return;
     }
 
-    setStatus({ type: 'loading', message: 'Ürün veritabanına ekleniyor...' });
+    setStatus({ type: 'loading', message: 'Ekleniyor...' });
     try {
-      const res = await fetch('https://tutu-backend-api.onrender.com/api/products', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': adminToken },
+      const response = await fetch('https://tutu-backend-api.onrender.com/api/products', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': adminToken
+        },
         body: JSON.stringify(formData)
       });
-      const data = await res.json();
+      const data = await response.json();
       if (data.success) {
-        setStatus({ type: 'success', message: 'Ürün Başarıyla Eklendi!' });
+        setStatus({ type: 'success', message: 'Eklendi!' });
         setFormData({ name: '', price: '', category: 'GİYİM', tag: '', is_new: false, image_url: '', stock: '' });
-        // Dosya seçici input'u temizle
-        document.getElementById('imageUploadInput').value = '';
+        
+        // Dosya seçiciyi temizle
+        const fileInput = document.getElementById('imageUploadInput');
+        if (fileInput) fileInput.value = '';
+
         fetchProducts();
+      } else {
+        setStatus({ type: 'error', message: data.message });
       }
-    } catch (error) { setStatus({ type: 'error', message: 'Yetkiniz reddedildi veya bağlantı koptu.' }); }
+    } catch (error) {
+      setStatus({ type: 'error', message: 'Yetkiniz reddedildi veya bağlantı koptu.' });
+    }
+  };
+
+  const startEdit = (product) => {
+    setEditingId(product.id);
+    setEditFormData({ name: product.name, price: product.price });
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
   };
 
   useEffect(() => {
@@ -174,7 +230,7 @@ const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/denlwno3i/image/upload';
     return (
       <div className="min-h-screen bg-neutral-900 flex items-center justify-center">
         <div className="bg-white p-10 rounded-xl shadow-2xl w-full max-w-md text-center">
-          <h1 className="text-3xl font-extrabold mb-2">TUTU<span className="text-[#db2777]">.</span></h1>
+          <h1 className="text-3xl font-extrabold mb-2">TUTU<span className="text-[#db2777]">✮⋆</span></h1>
           <p className="text-neutral-500 mb-8 font-medium">Güvenli Yönetici Girişi</p>
           <form onSubmit={handleLogin}>
             <input type="password" value={passwordInput} onChange={(e) => setPasswordInput(e.target.value)} placeholder="Şifrenizi Girin" className="w-full px-4 py-3 rounded-lg border focus:border-pink-500 mb-4 text-center tracking-widest" required />
@@ -188,33 +244,28 @@ const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/denlwno3i/image/upload';
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col md:flex-row">
       <div className="w-full md:w-64 md:min-h-screen bg-neutral-900 text-white flex flex-col">
-        <div className="p-6 border-b border-neutral-800"><h1 className="text-2xl font-extrabold tracking-tighter">TUTU<span className="text-[#db2777]">.</span></h1></div>
+        <div className="p-6 border-b border-neutral-800"><h1 className="text-2xl font-extrabold tracking-tighter">TUTU<span className="text-[#db2777]">✮⋆</span></h1></div>
         <nav className="flex-1 p-4 space-y-2">
           <button onClick={() => setActiveTab('add')} className={`w-full text-left px-4 py-3 rounded-md font-semibold transition ${activeTab === 'add' ? 'bg-[#db2777]' : 'text-neutral-400 hover:text-white'}`}>📦 Yeni Ürün Ekle</button>
           <button onClick={() => setActiveTab('list')} className={`w-full text-left px-4 py-3 rounded-md font-semibold transition ${activeTab === 'list' ? 'bg-[#db2777]' : 'text-neutral-400 hover:text-white'}`}>📋 Ürün Listesi</button>
           <button onClick={() => setActiveTab('orders')} className={`w-full text-left px-4 py-3 rounded-md font-semibold transition ${activeTab === 'orders' ? 'bg-[#db2777]' : 'text-neutral-400 hover:text-white'}`}>💳 Sipariş Yönetimi</button>
+          <button onClick={() => setActiveTab('logs')} className={`w-full text-left px-4 py-3 rounded-md font-semibold transition ${activeTab === 'logs' ? 'bg-[#db2777]' : 'text-neutral-400 hover:text-white'}`}>🕒 Sistem Logları</button>
           <button onClick={handleLogout} className="w-full text-left px-4 py-3 rounded-md font-semibold text-red-500 mt-8 hover:bg-neutral-800">🚪 Güvenli Çıkış</button>
         </nav>
       </div>
 
       <div className="flex-1 p-4 md:p-10 overflow-y-auto">
         
-        {/* YENİ ÜRÜN EKLEME */}
+        {/* YENİ ÜRÜN */}
         {activeTab === 'add' && (
           <div className="max-w-2xl bg-white p-5 md:p-8 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold mb-6">Yeni Ürün Ekle</h2>
-            
-            {status.message && (
-              <div className={`p-4 mb-6 rounded-lg font-bold text-sm ${status.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : status.type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}`}>
-                {status.message}
-              </div>
-            )}
-
+            {status.message && <p className={`mb-4 text-sm font-bold ${status.type === 'success' ? 'text-green-600' : status.type === 'error' ? 'text-red-500' : 'text-blue-600'}`}>{status.message}</p>}
             <form onSubmit={handleSubmit} className="space-y-6">
-              <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg" placeholder="Ürün Adı (Örn: Siyah Triko Elbise)" />
+              <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg" placeholder="Ürün Adı" />
               
-              {/* CLOUDINARY DOSYA YÜKLEME ALANI */}
-              <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center bg-neutral-50 hover:bg-neutral-100 transition">
+              {/* CLOUDINARY RESİM YÜKLEME ALANI */}
+              <div className="border border-dashed border-neutral-300 rounded-lg p-6 text-center bg-neutral-50">
                 <label className="block text-sm font-bold text-neutral-700 mb-2">Ürün Fotoğrafı Yükle</label>
                 <input 
                   type="file" 
@@ -226,28 +277,19 @@ const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/denlwno3i/image/upload';
                 {formData.image_url && (
                   <div className="mt-4 flex flex-col items-center">
                     <span className="text-xs text-green-600 font-bold mb-2">✓ Resim Hazır</span>
-                    <img src={formData.image_url} alt="Önizleme" className="h-32 object-contain rounded border shadow-sm" />
+                    <img src={formData.image_url} alt="Önizleme" className="h-32 object-contain rounded shadow-sm" />
                   </div>
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg" placeholder="Fiyat (TL)" />
-                <input type="number" name="stock" value={formData.stock} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg" placeholder="Stok Adedi" />
+                <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg" placeholder="Fiyat" />
+                <input type="number" name="stock" value={formData.stock} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg" placeholder="Stok" />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg font-medium text-neutral-700">
-                  <option value="GİYİM">GİYİM</option>
-                  <option value="ÇANTA">ÇANTA</option>
-                  <option value="AKSESUAR">AKSESUAR</option>
-                </select>
-                <input type="text" name="tag" value={formData.tag} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg" placeholder="Etiket (Örn: ÇOK SATAN)" />
-              </div>
-
-              <button type="submit" disabled={status.type === 'loading'} className="w-full bg-neutral-900 text-white font-bold py-4 rounded-lg hover:bg-[#db2777] transition shadow-lg disabled:bg-neutral-400">
-                ÜRÜNÜ YAYINLA
-              </button>
+              <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg">
+                <option value="GİYİM">GİYİM</option><option value="ÇANTA">ÇANTA</option><option value="AKSESUAR">AKSESUAR</option>
+              </select>
+              <button type="submit" disabled={status.type === 'loading'} className="w-full bg-neutral-900 text-white font-bold py-4 rounded-lg disabled:bg-neutral-400">EKLE</button>
             </form>
           </div>
         )}
@@ -256,29 +298,39 @@ const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/denlwno3i/image/upload';
         {activeTab === 'list' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold mb-6">Mevcut Ürünler</h2>
-            {isProductsLoading ? <p className="text-neutral-500 font-bold">Yükleniyor...</p> : productList.length === 0 ? <p className="text-neutral-500">Sistemde ürün yok.</p> : (
+            
+            {isProductsLoading ? <p className="text-neutral-500">Ürünler yükleniyor...</p> : 
+             productFetchError ? <div className="p-5 bg-red-50 text-red-600 rounded-xl font-bold">❌ Hata: {productFetchError}</div> : 
+             productList.length === 0 ? <div className="p-10 bg-neutral-50 text-neutral-500 text-center rounded-xl border border-dashed">Sistemde ürün bulunmuyor.</div> : 
+            (
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="border-b text-sm text-neutral-500"><th className="py-3 px-4">Görsel</th><th className="py-3 px-4">Adı</th><th className="py-3 px-4">Fiyat</th><th className="py-3 px-4">İşlem</th></tr>
+                    <tr className="border-b text-sm font-semibold text-neutral-500">
+                      <th className="py-3 px-4">Ürün Adı</th>
+                      <th className="py-3 px-4">Fiyat</th>
+                      <th className="py-3 px-4">İşlem</th>
+                    </tr>
                   </thead>
-                  <tbody>
-                    {productList.map(p => (
-                      <tr key={p.id} className="border-b hover:bg-neutral-50">
-                        <td className="py-2 px-4"><img src={p.image_url} className="w-10 h-10 object-cover rounded border" /></td>
+                  <tbody className="text-sm">
+                    {productList.map((p, idx) => (
+                      <tr key={p.id || idx} className="border-b hover:bg-neutral-50 transition">
                         {editingId === p.id ? (
                           <>
-                            <td className="py-3 px-4"><input type="text" value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} className="border px-2 py-1 w-full" /></td>
-                            <td className="py-3 px-4"><input type="number" value={editFormData.price} onChange={e => setEditFormData({...editFormData, price: e.target.value})} className="border px-2 py-1 w-24" /></td>
-                            <td className="py-3 px-4 flex gap-2"><button onClick={() => handleUpdateProduct(p.id)} className="bg-green-600 text-white px-3 py-1 text-xs rounded">Kaydet</button><button onClick={() => setEditingId(null)} className="bg-neutral-400 text-white px-3 py-1 text-xs rounded">İptal</button></td>
+                            <td className="py-3 px-4"><input type="text" value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} className="w-full px-3 py-2 border rounded-lg font-bold" /></td>
+                            <td className="py-3 px-4"><input type="number" value={editFormData.price} onChange={e => setEditFormData({...editFormData, price: e.target.value})} className="w-28 px-3 py-2 border rounded-lg font-bold" /></td>
+                            <td className="py-3 px-4 flex gap-2">
+                              <button onClick={() => handleUpdateProduct(p.id)} className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Kaydet</button>
+                              <button onClick={() => setEditingId(null)} className="bg-neutral-400 text-white px-4 py-2 rounded-lg text-xs font-bold">İptal</button>
+                            </td>
                           </>
                         ) : (
                           <>
-                            <td className="py-4 px-4 font-bold text-sm">{p.name}</td>
-                            <td className="py-4 px-4 text-[#db2777] font-black text-sm">{p.price} TL</td>
+                            <td className="py-4 px-4 font-bold text-neutral-800">{p.name}</td>
+                            <td className="py-4 px-4 text-[#db2777] font-black">{p.price} TL</td>
                             <td className="py-4 px-4 flex gap-2">
-                              <button onClick={() => {setEditingId(p.id); setEditFormData({name: p.name, price: p.price});}} className="text-blue-600 bg-blue-50 px-3 py-1 rounded text-xs font-bold">Düzenle</button>
-                              <button onClick={() => handleDelete(p.id)} className="text-red-600 bg-red-50 px-3 py-1 rounded text-xs font-bold">Sil</button>
+                              <button onClick={() => startEdit(p)} className="text-blue-600 font-bold bg-blue-50 px-3 py-1.5 rounded-lg text-xs">Düzenle</button>
+                              <button onClick={() => handleDelete(p.id)} className="text-red-500 font-bold bg-red-50 px-3 py-1.5 rounded-lg text-xs">Sil</button>
                             </td>
                           </>
                         )}
@@ -291,20 +343,62 @@ const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/denlwno3i/image/upload';
           </div>
         )}
 
-        {/* SİPARİŞLER (Basitleştirilmiş Görünüm) */}
+        {/* LOGLAR */}
+        {activeTab === 'logs' && (
+          <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
+            <h2 className="text-2xl font-bold mb-6">Sistem Logları</h2>
+            <table className="w-full text-left text-sm"><tbody>
+              {logList.map(log => (<tr key={log.id} className="border-b"><td className="py-3">{log.action}</td><td className="py-3">{log.details}</td></tr>))}
+            </tbody></table>
+          </div>
+        )}
+
+        {/* SİPARİŞLER */}
         {activeTab === 'orders' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
-            <h2 className="text-2xl font-bold mb-6">Sipariş Yönetimi</h2>
+            <h2 className="text-2xl font-bold text-neutral-800 mb-6">Sipariş Yönetimi</h2>
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead><tr className="bg-neutral-50 border-b"><th className="p-4">Müşteri</th><th className="p-4">Tutar</th><th className="p-4">Durum</th></tr></thead>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-neutral-50 text-neutral-600 border-b border-neutral-200 text-sm">
+                    <th className="py-4 px-4 font-semibold">Sipariş</th>
+                    <th className="py-4 px-4 font-semibold w-1/3">Müşteri</th>
+                    <th className="py-4 px-4 font-semibold">Ürünler</th>
+                    <th className="py-4 px-4 font-semibold text-right">Durum</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {orderList.map(order => (
-                    <tr key={order.id} className="border-b">
-                      <td className="p-4"><p className="font-bold">{order.customer_name}</p><p className="text-xs text-neutral-500">{order.phone}</p></td>
-                      <td className="p-4 font-black">{order.total_amount} TL</td>
-                      <td className="p-4">
-                        <select value={order.status || 'Hazırlanıyor'} onChange={(e) => handleOrderStatusChange(order.id, e.target.value)} className="border p-1 text-xs rounded">
+                    <tr key={order.id} className="border-b border-neutral-100 hover:bg-neutral-50">
+                      <td className="py-4 px-4 align-top">
+                        <span className="block text-xs font-bold text-neutral-400 mb-1">#{order.order_number || order.id}</span>
+                        <span className="text-sm font-black text-neutral-900">{order.total_amount},00 TL</span>
+                      </td>
+                      <td className="py-4 px-4 align-top">
+                        <p className="font-bold text-neutral-800 text-sm mb-1">{order.customer_name}</p>
+                        <p className="text-xs font-bold text-[#db2777] mb-2">📞 {order.phone || 'Belirtilmemiş'}</p>
+                        <p className="text-xs text-neutral-500 leading-relaxed max-w-[250px] bg-neutral-100 p-2 rounded-md">📍 {order.address || 'Yok'}</p>
+                      </td>
+                      <td className="py-4 px-4 align-top">
+                        <div className="flex flex-col gap-1.5 max-w-[180px]">
+                          {(() => {
+                            let itemsArray = [];
+                            if (order.items) {
+                              if (typeof order.items === 'string') {
+                                try { itemsArray = JSON.parse(order.items); } catch (e) {}
+                              } else if (Array.isArray(order.items)) itemsArray = order.items;
+                            }
+                            return itemsArray.length > 0 ? itemsArray.map((item, idx) => (
+                              <div key={idx} className="text-xs text-neutral-700 bg-neutral-50 border p-1.5 rounded-md leading-tight">
+                                <span className="font-bold text-neutral-900 block truncate">{item.name}</span>
+                                <span className="text-[10px] text-neutral-500 block mt-0.5">{item.selectedColor || '-'} / {item.selectedSize || '-'} | {item.quantity || 1} Adet</span>
+                              </div>
+                            )) : <span className="text-xs text-neutral-400 italic">Detay yok</span>;
+                          })()}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-right align-top">
+                        <select value={order.status || 'Hazırlanıyor'} onChange={(e) => handleOrderStatusChange(order.id, e.target.value)} className={`border text-xs font-bold rounded-lg px-2 py-2 cursor-pointer focus:outline-none ${order.status === 'Teslim Edildi' ? 'text-green-700 bg-green-50 border-green-200' : 'text-orange-700 bg-orange-50 border-orange-200'}`}>
                           {statusSteps.map(step => <option key={step} value={step}>{step}</option>)}
                         </select>
                       </td>
