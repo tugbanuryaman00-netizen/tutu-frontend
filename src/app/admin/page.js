@@ -7,13 +7,17 @@ export default function AdminPanel() {
   const [adminToken, setAdminToken] = useState('');
   
   const [activeTab, setActiveTab] = useState('add');
-  const [formData, setFormData] = useState({ name: '', price: '', category: 'GİYİM', tag: '', is_new: false, image_url: '', stock: '' });
+  
+  // SEO İÇİN EKLENDİ: description alanı formData içine dahil edildi
+  const [formData, setFormData] = useState({ name: '', price: '', category: 'GİYİM', tag: '', is_new: false, image_url: '', stock: '', description: '' });
   const [status, setStatus] = useState({ type: '', message: '' });
   const [productList, setProductList] = useState([]);
   const [logList, setLogList] = useState([]);
   
   const [editingId, setEditingId] = useState(null);
-  const [editFormData, setEditFormData] = useState({ name: '', price: '' });
+  
+  // SEO İÇİN EKLENDİ: description alanı düzenleme (edit) formuna dahil edildi
+  const [editFormData, setEditFormData] = useState({ name: '', price: '', description: '' });
 
   const [isProductsLoading, setIsProductsLoading] = useState(true);
   const [productFetchError, setProductFetchError] = useState('');
@@ -105,7 +109,7 @@ export default function AdminPanel() {
       if (data.success) {
         setEditingId(null);
         fetchProducts();
-        alert('Ürün güncellendi!');
+        alert('Ürün başarıyla güncellendi!');
       } else alert('Hata: ' + data.message);
     } catch (error) { alert('Bağlantı hatası.'); }
   };
@@ -140,9 +144,6 @@ export default function AdminPanel() {
     } catch (error) {}
   };
 
-  // ==========================================
-  // YENİ EKLENEN: CLOUDINARY RESİM YÜKLEME
-  // ==========================================
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -192,8 +193,10 @@ export default function AdminPanel() {
       });
       const data = await response.json();
       if (data.success) {
-        setStatus({ type: 'success', message: 'Eklendi!' });
-        setFormData({ name: '', price: '', category: 'GİYİM', tag: '', is_new: false, image_url: '', stock: '' });
+        setStatus({ type: 'success', message: 'Ürün Başarıyla Eklendi!' });
+        
+        // SEO İÇİN EKLENDİ: Form temizlenirken description da sıfırlanıyor
+        setFormData({ name: '', price: '', category: 'GİYİM', tag: '', is_new: false, image_url: '', stock: '', description: '' });
         
         // Dosya seçiciyi temizle
         const fileInput = document.getElementById('imageUploadInput');
@@ -210,7 +213,8 @@ export default function AdminPanel() {
 
   const startEdit = (product) => {
     setEditingId(product.id);
-    setEditFormData({ name: product.name, price: product.price });
+    // SEO İÇİN EKLENDİ: Düzenlemeye başlarken açıklamayı da alıyor
+    setEditFormData({ name: product.name, price: product.price, description: product.description || '' });
   };
 
   const handleChange = (e) => {
@@ -262,8 +266,23 @@ export default function AdminPanel() {
             <h2 className="text-2xl font-bold mb-6">Yeni Ürün Ekle</h2>
             {status.message && <p className={`mb-4 text-sm font-bold ${status.type === 'success' ? 'text-green-600' : status.type === 'error' ? 'text-red-500' : 'text-blue-600'}`}>{status.message}</p>}
             <form onSubmit={handleSubmit} className="space-y-6">
-              <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg" placeholder="Ürün Adı" />
               
+              <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]" placeholder="Ürün Adı (Örn: Siyah Oversize Tişört)" />
+              
+              {/* SEO İÇİN EKLENDİ: Detaylı Açıklama (Description) Formu */}
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-neutral-700">Ürün Açıklaması (SEO Optimizasyonu)</label>
+                <textarea 
+                  name="description" 
+                  value={formData.description} 
+                  onChange={handleChange} 
+                  required 
+                  className="w-full px-4 py-3 border rounded-lg h-24 resize-none focus:outline-none focus:border-[#db2777]" 
+                  placeholder="Google'da öne çıkması için kumaş, renk, kesim ve kullanım detaylarını yazın. Örn: %100 pamuklu, nefes alabilen yazlık kadın elbise..." 
+                />
+                <p className="text-[11px] text-neutral-500 font-medium">Ne kadar detaylı ve anahtar kelime odaklı yazarsanız arama motorlarında o kadar üstte çıkarsınız.</p>
+              </div>
+
               {/* CLOUDINARY RESİM YÜKLEME ALANI */}
               <div className="border border-dashed border-neutral-300 rounded-lg p-6 text-center bg-neutral-50">
                 <label className="block text-sm font-bold text-neutral-700 mb-2">Ürün Fotoğrafı Yükle</label>
@@ -283,13 +302,20 @@ export default function AdminPanel() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg" placeholder="Fiyat" />
-                <input type="number" name="stock" value={formData.stock} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg" placeholder="Stok" />
+                <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]" placeholder="Fiyat (TL)" />
+                <input type="number" name="stock" value={formData.stock} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]" placeholder="Stok Adedi" />
               </div>
-              <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg">
-                <option value="GİYİM">GİYİM</option><option value="ÇANTA">ÇANTA</option><option value="AKSESUAR">AKSESUAR</option>
-              </select>
-              <button type="submit" disabled={status.type === 'loading'} className="w-full bg-neutral-900 text-white font-bold py-4 rounded-lg disabled:bg-neutral-400">EKLE</button>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]">
+                  <option value="GİYİM">GİYİM</option><option value="ÇANTA">ÇANTA</option><option value="AKSESUAR">AKSESUAR</option>
+                </select>
+                <input type="text" name="tag" value={formData.tag} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]" placeholder="Etiket (Örn: ÇOK SATAN)" />
+              </div>
+
+              <button type="submit" disabled={status.type === 'loading'} className="w-full bg-neutral-900 text-white font-bold py-4 rounded-lg disabled:bg-neutral-400 hover:bg-[#db2777] transition shadow-lg tracking-widest">
+                ÜRÜNÜ YAYINLA
+              </button>
             </form>
           </div>
         )}
@@ -307,7 +333,8 @@ export default function AdminPanel() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b text-sm font-semibold text-neutral-500">
-                      <th className="py-3 px-4">Ürün Adı</th>
+                      <th className="py-3 px-4">Görsel</th>
+                      <th className="py-3 px-4">Ürün Detayı</th>
                       <th className="py-3 px-4">Fiyat</th>
                       <th className="py-3 px-4">İşlem</th>
                     </tr>
@@ -317,20 +344,32 @@ export default function AdminPanel() {
                       <tr key={p.id || idx} className="border-b hover:bg-neutral-50 transition">
                         {editingId === p.id ? (
                           <>
-                            <td className="py-3 px-4"><input type="text" value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} className="w-full px-3 py-2 border rounded-lg font-bold" /></td>
-                            <td className="py-3 px-4"><input type="number" value={editFormData.price} onChange={e => setEditFormData({...editFormData, price: e.target.value})} className="w-28 px-3 py-2 border rounded-lg font-bold" /></td>
-                            <td className="py-3 px-4 flex gap-2">
-                              <button onClick={() => handleUpdateProduct(p.id)} className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Kaydet</button>
-                              <button onClick={() => setEditingId(null)} className="bg-neutral-400 text-white px-4 py-2 rounded-lg text-xs font-bold">İptal</button>
+                            <td className="py-3 px-4"><img src={p.image_url} className="w-12 h-12 object-cover rounded border" /></td>
+                            <td className="py-3 px-4 flex flex-col gap-2">
+                              <input type="text" value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} className="w-full px-3 py-2 border rounded-lg font-bold" placeholder="Ürün Adı" />
+                              <textarea value={editFormData.description} onChange={e => setEditFormData({...editFormData, description: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs h-16 resize-none" placeholder="Ürün Açıklaması" />
+                            </td>
+                            <td className="py-3 px-4"><input type="number" value={editFormData.price} onChange={e => setEditFormData({...editFormData, price: e.target.value})} className="w-24 px-3 py-2 border rounded-lg font-bold" /></td>
+                            <td className="py-3 px-4">
+                              <div className="flex flex-col gap-2">
+                                <button onClick={() => handleUpdateProduct(p.id)} className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Kaydet</button>
+                                <button onClick={() => setEditingId(null)} className="bg-neutral-400 text-white px-4 py-2 rounded-lg text-xs font-bold">İptal</button>
+                              </div>
                             </td>
                           </>
                         ) : (
                           <>
-                            <td className="py-4 px-4 font-bold text-neutral-800">{p.name}</td>
+                            <td className="py-4 px-4"><img src={p.image_url} className="w-12 h-12 object-cover rounded border shadow-sm" /></td>
+                            <td className="py-4 px-4">
+                              <div className="font-bold text-neutral-800">{p.name}</div>
+                              {p.description && <div className="text-xs text-neutral-500 mt-1 line-clamp-1 max-w-[250px]">{p.description}</div>}
+                            </td>
                             <td className="py-4 px-4 text-[#db2777] font-black">{p.price} TL</td>
-                            <td className="py-4 px-4 flex gap-2">
-                              <button onClick={() => startEdit(p)} className="text-blue-600 font-bold bg-blue-50 px-3 py-1.5 rounded-lg text-xs">Düzenle</button>
-                              <button onClick={() => handleDelete(p.id)} className="text-red-500 font-bold bg-red-50 px-3 py-1.5 rounded-lg text-xs">Sil</button>
+                            <td className="py-4 px-4">
+                              <div className="flex gap-2">
+                                <button onClick={() => startEdit(p)} className="text-blue-600 font-bold bg-blue-50 px-3 py-1.5 rounded-lg text-xs">Düzenle</button>
+                                <button onClick={() => handleDelete(p.id)} className="text-red-500 font-bold bg-red-50 px-3 py-1.5 rounded-lg text-xs">Sil</button>
+                              </div>
                             </td>
                           </>
                         )}
