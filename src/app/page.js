@@ -26,7 +26,7 @@ export function PreOrderHero({ onAddToCart }) {
     <section className="w-full bg-neutral-900 py-16 px-4 md:px-10">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">TUTU<span className="text-pink-500">.</span> EXCLUSIVE</h2>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">TUTU<span className="text-[#db2777]">.</span> EXCLUSIVE</h2>
           <p className="text-neutral-400 font-medium">Sadece size özel üretilen, sınırlı sayıdaki ikonik parçaları hemen ayırtın.</p>
         </div>
 
@@ -34,7 +34,7 @@ export function PreOrderHero({ onAddToCart }) {
           {specialProducts.map((product) => (
             <div key={product.id} className="relative group overflow-hidden rounded-2xl bg-neutral-800 shadow-2xl">
               <div className="absolute top-4 left-4 z-10">
-                <span className="bg-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg tracking-wider">
+                <span className="bg-[#db2777] text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg tracking-wider">
                   {product.tag}
                 </span>
               </div>
@@ -48,7 +48,7 @@ export function PreOrderHero({ onAddToCart }) {
                     <span className="text-pink-400 font-extrabold text-xl">{product.price},00 TL</span>
                     <button 
                       onClick={() => onAddToCart(product, 'Özel Beden', 'Özel Üretim')}
-                      className="bg-white text-neutral-900 px-6 py-3 rounded-lg font-bold hover:bg-pink-500 hover:text-white transition duration-300 shadow-[0_0_15px_rgba(236,72,153,0.3)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)]">
+                      className="bg-white text-neutral-900 px-6 py-3 rounded-lg font-bold hover:bg-[#db2777] hover:text-white transition duration-300 shadow-[0_0_15px_rgba(236,72,153,0.3)] hover:shadow-[0_0_25px_rgba(236,72,153,0.6)]">
                       Sepete Ekle
                     </button>
                   </div>
@@ -164,17 +164,14 @@ export default function Home() {
       const response = await fetch('https://tutu-backend-api.onrender.com/api/payment/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-// ... submitOrder fonksiyonu içinde ...
         body: JSON.stringify({ 
           customer_name: checkoutForm.name, 
-          phone: checkoutForm.phone,       // Yeni ekledik
-          address: fullShippingAddress,    // Yeni ekledik!
+          phone: checkoutForm.phone,       
+          address: fullShippingAddress,    
           total_amount: Number(cartTotal), 
           items: cart,
           user_id: user ? user.id : null
         })
-
-// ...
       });
       const data = await response.json();
       
@@ -197,14 +194,11 @@ export default function Home() {
     setCart(cart.filter((item) => item.uniqueId !== uniqueId));
   };
 
-  // İŞTE İKİNCİ ÇÖZÜM: Fiyat metne dönüşmüşse bile onu zorla Sayıya (Number) çeviriyor
   const cartTotal = cart.reduce((total, item) => total + Number(item.price || 0), 0);
 
   // Kategoriye ve Arama Kelimesine Göre Filtreleme Motoru
   const filteredProducts = products.filter(p => {
-    // 1. Kategori filtresi
     const matchesCategory = activeCategory === 'TÜMÜ' || p.category === activeCategory;
-    // 2. Arama filtresi (İsim, açıklama veya etikette arar)
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch = 
       p.name?.toLowerCase().includes(searchLower) || 
@@ -215,28 +209,37 @@ export default function Home() {
     return matchesCategory && matchesSearch;
   });
 
+  // SEPETTE GÖSTERİLECEK RASTGELE "BUNLARI DA BEĞENEBİLİRSİNİZ" ÜRÜNLERİ (Sepette olmayanlardan seçer)
+  const cartProductIds = cart.map(c => c.id);
+  const crossSellProducts = products
+    .filter(p => !cartProductIds.includes(p.id)) // Sepetteki ürünü tekrar önermesin
+    .sort(() => 0.5 - Math.random()) // Karıştır
+    .slice(0, 4); // 4 Tane göster
+
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 relative">
+
+      {/* --- SABİT WHATSAPP BUTONU --- */}
+      <a href={`https://wa.me/905331400419?text=${encodeURIComponent("Merhaba, TUTU Giyim koleksiyonu hakkında bilgi almak istiyorum.")}`} 
+         target="_blank" rel="noopener noreferrer" 
+         className="fixed bottom-6 right-6 z-[100] flex items-center justify-center w-14 h-14 bg-[#25D366] text-white rounded-full shadow-[0_4px_15px_rgba(37,211,102,0.4)] hover:bg-[#128C7E] transition-all transform hover:scale-110">
+        <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a5.49 5.49 0 0 1-2.793-.768l-.2-.116-2.073.544.553-2.016-.128-.212a5.49 5.49 0 0 1-.84-2.883c0-3.036 2.47-5.505 5.507-5.505 1.47 0 2.853.573 3.89 1.614a5.474 5.474 0 0 1 1.605 3.888c0 3.037-2.47 5.506-5.505 5.506z"/></svg>
+      </a>
 
       {/* --- GOOGLE GİRİŞ PENCERESİ (MODAL) --- */}
       {isAuthModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative">
-            <button onClick={() => setIsAuthModalOpen(false)} className="absolute top-4 right-4 text-neutral-400 hover:text-pink-600 transition">
+            <button onClick={() => setIsAuthModalOpen(false)} className="absolute top-4 right-4 text-neutral-400 hover:text-[#db2777] transition">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
             <div className="p-10 text-center mt-2">
-              <h2 className="text-4xl font-extrabold text-neutral-900 tracking-tighter mb-3">TUTU<span className="text-pink-600">.</span></h2>
+              <h2 className="text-4xl font-extrabold text-neutral-900 tracking-tighter mb-3">TUTU<span className="text-[#db2777]">✮⋆</span></h2>
               <p className="text-neutral-500 font-medium mb-8">Siparişlerini takip etmek ve hızlı alışveriş yapmak için hemen giriş yap.</p>
-
-              <button 
-               onClick={signInWithGoogle}
-                className="w-full flex items-center justify-center gap-3 bg-white border-2 border-neutral-200 text-neutral-700 font-bold py-4 rounded-xl hover:bg-neutral-50 hover:border-neutral-300 transition shadow-sm mb-4"
-              >
+              <button onClick={signInWithGoogle} className="w-full flex items-center justify-center gap-3 bg-white border-2 border-neutral-200 text-neutral-700 font-bold py-4 rounded-xl hover:bg-neutral-50 hover:border-neutral-300 transition shadow-sm mb-4">
                 <svg className="w-6 h-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
                 Google ile Devam Et
               </button>
-
               <p className="text-xs text-neutral-400 mt-6 leading-relaxed">Giriş yaparak, TUTU Giyim Kullanım Koşullarını ve Gizlilik Politikasını kabul etmiş olursunuz.</p>
             </div>
           </div>
@@ -245,13 +248,13 @@ export default function Home() {
 
       {/* SEPET VE KASA YAN PANELİ */}
       {isCartOpen && (
-        <div className="fixed inset-0 bg-black/40 z-[60] flex justify-end">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex justify-end">
           <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col">
             <div className="flex justify-between items-center p-6 border-b border-gray-100">
               <h2 className="text-xl font-bold">
                 {isCheckoutMode ? 'Teslimat Bilgileri' : `Sepetim (${cart.length})`}
               </h2>
-              <button onClick={() => { setIsCartOpen(false); setIsCheckoutMode(false); }} className="text-neutral-400 hover:text-pink-600 transition">
+              <button onClick={() => { setIsCartOpen(false); setIsCheckoutMode(false); }} className="text-neutral-400 hover:text-[#db2777] transition">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
@@ -265,27 +268,45 @@ export default function Home() {
                     cart.map((item) => (
                       <div key={item.uniqueId} className="flex justify-between items-start border-b border-gray-100 pb-4">
                         <div className="flex gap-3">
-                          {item.image_url && <img src={item.image_url} alt={item.name} className="w-12 h-16 object-cover bg-neutral-100" />}
+                          {item.image_url && <img src={item.image_url} alt={item.name} className="w-12 h-16 object-cover bg-neutral-100 rounded" />}
                           <div>
                             <h4 className="text-sm font-semibold text-neutral-800">{item.name}</h4>
                             <p className="text-xs text-neutral-500 mt-0.5">Renk: {item.selectedColor} | Beden: {item.selectedSize}</p>
-                            <p className="text-pink-600 font-bold text-sm mt-1">{item.price},00 TL</p>
+                            <p className="text-[#db2777] font-bold text-sm mt-1">{item.price},00 TL</p>
                           </div>
                         </div>
                         <button onClick={() => removeFromCart(item.uniqueId)} className="text-xs text-red-500 hover:underline">Kaldır</button>
                       </div>
                     ))
                   )}
+
+                  {/* SEPET İÇİ CROSS-SELLING (Bunları da beğenebilirsiniz) */}
+                  {crossSellProducts.length > 0 && (
+                    <div className="mt-10 pt-6 border-t border-neutral-100">
+                      <h3 className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-4">Bunları Da Sevebilirsiniz</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        {crossSellProducts.map(rp => (
+                          <Link href={`/urun/${rp.id}`} key={rp.id} onClick={() => setIsCartOpen(false)} className="group border border-neutral-100 rounded p-2 hover:border-pink-200 transition bg-white block">
+                            <div className="aspect-[3/4] bg-neutral-50 overflow-hidden mb-2 rounded-sm relative">
+                              <img src={rp.image_url} alt={rp.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                            </div>
+                            <h4 className="text-[10px] font-bold text-neutral-700 line-clamp-1 group-hover:text-[#db2777]">{rp.name}</h4>
+                            <p className="text-[#db2777] font-black text-xs mt-0.5">{rp.price},00 TL</p>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-6 border-t border-gray-100 bg-neutral-50">
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-semibold text-lg">Toplam Tutar:</span>
-                    <span className="font-bold text-2xl text-pink-600">{cartTotal},00 TL</span>
+                    <span className="font-bold text-2xl text-[#db2777]">{cartTotal},00 TL</span>
                   </div>
                   <button 
                     onClick={() => setIsCheckoutMode(true)}
-                    className={`w-full py-4 rounded-sm font-bold text-white transition ${cart.length === 0 ? 'bg-neutral-300 cursor-not-allowed' : 'bg-pink-600 hover:bg-neutral-900'}`}
+                    className={`w-full py-4 rounded-sm font-bold text-white transition ${cart.length === 0 ? 'bg-neutral-300 cursor-not-allowed' : 'bg-[#db2777] hover:bg-neutral-900'}`}
                     disabled={cart.length === 0}
                   >
                     GÜVENLİ ÖDEMEYE GEÇ
@@ -299,43 +320,43 @@ export default function Home() {
                     <div>
                       <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Adınız Soyadınız *</label>
                       <input type="text" required value={checkoutForm.name} onChange={(e) => setCheckoutForm({...checkoutForm, name: e.target.value})} 
-                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50" placeholder="Örn: Ayşe Yılmaz" />
+                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-[#db2777] bg-neutral-50" placeholder="Örn: Ayşe Yılmaz" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Telefon Numaranız *</label>
                       <input type="tel" required value={checkoutForm.phone} onChange={(e) => setCheckoutForm({...checkoutForm, phone: e.target.value})} 
-                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50" placeholder="Örn: 0555 123 45 67" />
+                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-[#db2777] bg-neutral-50" placeholder="Örn: 0555 123 45 67" />
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4 pt-2">
                       <div>
                         <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">İl *</label>
                         <input type="text" required value={checkoutForm.city} onChange={(e) => setCheckoutForm({...checkoutForm, city: e.target.value})} 
-                          className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50" placeholder="Örn: Kocaeli" />
+                          className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-[#db2777] bg-neutral-50" placeholder="Örn: Kocaeli" />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">İlçe *</label>
                         <input type="text" required value={checkoutForm.district} onChange={(e) => setCheckoutForm({...checkoutForm, district: e.target.value})} 
-                          className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50" placeholder="Örn: Gebze" />
+                          className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-[#db2777] bg-neutral-50" placeholder="Örn: Gebze" />
                       </div>
                     </div>
                     
                     <div>
                       <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Mahalle *</label>
                       <input type="text" required value={checkoutForm.neighborhood} onChange={(e) => setCheckoutForm({...checkoutForm, neighborhood: e.target.value})} 
-                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50" placeholder="Örn: Osman Yılmaz" />
+                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-[#db2777] bg-neutral-50" placeholder="Örn: Osman Yılmaz" />
                     </div>
 
                     <div>
                       <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Sokak, Bina, Kapı No *</label>
                       <textarea required value={checkoutForm.address} onChange={(e) => setCheckoutForm({...checkoutForm, address: e.target.value})} 
-                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-pink-500 bg-neutral-50 h-20 resize-none" 
+                        className="w-full px-4 py-2.5 rounded border border-neutral-200 focus:outline-none focus:border-[#db2777] bg-neutral-50 h-20 resize-none" 
                         placeholder="Örn: 600. Sokak, Şahin Apt. No:12 Daire:4"></textarea>
                     </div>
 
                     <div className="flex items-center pt-2">
                       <input type="checkbox" id="saveAddress" checked={checkoutForm.saveAddress} onChange={(e) => setCheckoutForm({...checkoutForm, saveAddress: e.target.checked})} 
-                        className="w-5 h-5 accent-pink-600 rounded border-gray-300 cursor-pointer" />
+                        className="w-5 h-5 accent-[#db2777] rounded border-gray-300 cursor-pointer" />
                       <label htmlFor="saveAddress" className="ml-3 text-sm font-semibold text-neutral-700 cursor-pointer">
                         Sonraki alışverişlerim için bu adresi kaydet
                       </label>
@@ -347,7 +368,7 @@ export default function Home() {
                       <span className="font-semibold text-neutral-500">Ödenecek Tutar:</span>
                       <span className="font-black text-2xl text-neutral-900">{cartTotal},00 TL</span>
                     </div>
-                    <button type="submit" className="w-full bg-neutral-900 text-white font-bold py-4 rounded-lg hover:bg-pink-600 transition shadow-xl tracking-widest">
+                    <button type="submit" className="w-full bg-neutral-900 text-white font-bold py-4 rounded-lg hover:bg-[#db2777] transition shadow-xl tracking-widest">
                       SİPARİŞİ TAMAMLA
                     </button>
                     <button type="button" onClick={() => setIsCheckoutMode(false)} className="w-full mt-3 text-sm font-semibold text-neutral-500 hover:text-neutral-900 py-2">
@@ -361,14 +382,13 @@ export default function Home() {
         </div>
       )}
 
-      {/* ÜST NAVBAR */}
       {/* ÜST KAMPANYA BANDI */}
       <div className="bg-neutral-900 text-white text-[11px] font-bold tracking-widest uppercase py-2 text-center">
         İlk Siparişe Özel %15 İndirim | 500 TL Üzeri Kargo Bedava
       </div>
 
       {/* MODERN HEADER */}
-      <header className="bg-white border-b border-neutral-200 sticky top-0 z-50">
+      <header className="bg-white border-b border-neutral-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
           
           {/* LOGO */}
@@ -376,7 +396,7 @@ export default function Home() {
             TUTU<span className="text-[#db2777]">✮⋆</span>
           </Link>
 
-          {/* KATEGORİLER (Sadece PC'de görünür) */}
+          {/* KATEGORİLER (Sadece PC) */}
           <nav className="hidden md:flex space-x-8 font-medium text-sm text-neutral-500">
             {['TÜMÜ', 'GİYİM', 'ÇANTA', 'AKSESUAR'].map((cat) => (
               <button key={cat} onClick={() => { setActiveCategory(cat); }} className={`transition duration-300 ${activeCategory === cat ? 'text-[#db2777] font-bold border-b-2 border-[#db2777]' : 'hover:text-[#db2777]'}`}>
@@ -385,7 +405,7 @@ export default function Home() {
             ))}
           </nav>
 
-          {/* MODERN SEARCHBAR (Sadece PC'de Açık Halde Görünür) */}
+          {/* MODERN SEARCHBAR (PC) */}
           <div className="hidden lg:flex items-center relative w-72 ml-4">
             <input 
               type="text" 
@@ -435,10 +455,9 @@ export default function Home() {
             )}
           </div>
 
-          {/* İKONLAR (Mobilde Arama İkonu Ekli) */}
+          {/* İKONLAR */}
           <div className="flex items-center gap-5 md:gap-6 shrink-0">
-            
-            {/* MOBİL ARAMA İKONU (Sadece Mobilde Görünür) */}
+            {/* MOBİL ARAMA İKONU */}
             <button onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)} className="flex lg:hidden flex-col items-center text-neutral-600 hover:text-[#db2777] transition group">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1 group-hover:-translate-y-0.5 transition-transform">
                 <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -464,7 +483,6 @@ export default function Home() {
                 <span className="absolute -top-1 -right-2 bg-[#db2777] text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-sm">{cart.length}</span>
               )}
             </button>
-
           </div>
         </div>
 
@@ -538,7 +556,7 @@ export default function Home() {
       {/* 2. ONUN ALTINDA ÖN SİPARİŞ VİTRİNİ */}
       <PreOrderHero onAddToCart={addToCart} />
 
-  {/* 3. ANA ÜRÜN LİSTELEME GRİDİ (YENİ GELENLER) */}
+      {/* 3. ANA ÜRÜN LİSTELEME GRİDİ (YENİ GELENLER) */}
       <section className="py-16 container mx-auto px-4">
         <div className="flex justify-between items-end mb-10 border-b border-gray-100 pb-4">
           <h2 className="text-3xl md:text-4xl font-black text-neutral-900 tracking-tight">
@@ -556,7 +574,6 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {filteredProducts.slice(0, 8).map((product) => (
               <Link href={`/urun/${product.id}`} key={product.id} className="group flex flex-col cursor-pointer">
-                {/* Görseli biraz daha büyüttük (aspect-[4/5] - daha dikey ve estetik) */}
                 <div className="bg-neutral-100 aspect-[4/5] mb-5 overflow-hidden relative rounded-xl border border-gray-100 flex-shrink-0 shadow-sm">
                   {product.image_url ? (
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-in-out" />
@@ -583,7 +600,7 @@ export default function Home() {
       {searchQuery === '' && activeCategory === 'TÜMÜ' && (
         <div className="space-y-20 py-10 bg-neutral-50/50">
 
-          {/* SEZONUN ÖNE ÇIKANLARI (Biraz daha vurgulu - Hero gibi) */}
+          {/* SEZONUN ÖNE ÇIKANLARI */}
           <section className="container mx-auto px-4">
              <h2 className="text-3xl font-black text-neutral-900 mb-8 border-l-4 border-pink-600 pl-4">SEZONUN ÖNE ÇIKANLARI</h2>
              <div className="flex overflow-x-auto gap-6 pb-6 snap-x hide-scrollbar">
@@ -597,10 +614,13 @@ export default function Home() {
                   <p className="text-[#db2777] font-black text-base mt-1">{product.price},00 TL</p>
                 </Link>
               ))}
+              {products.filter(p => p.category === 'SEZON').length === 0 && (
+                [1,2,3].map(i => <div key={i} className="min-w-[240px] aspect-[3/4] bg-neutral-100 rounded-2xl animate-pulse flex items-center justify-center text-xs text-neutral-400 font-bold">Yakında</div>)
+              )}
             </div>
           </section>
           
-          {/* 1. ÜST GİYİM BÖLÜMÜ */}
+          {/* ÜST GİYİM BÖLÜMÜ */}
           <section className="container mx-auto px-4">
             <div className="flex justify-between items-end mb-6 border-b border-neutral-200 pb-2">
               <div>
@@ -626,7 +646,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* 2. ALT GİYİM BÖLÜMÜ */}
+          {/* ALT GİYİM BÖLÜMÜ */}
           <section className="container mx-auto px-4">
             <div className="flex justify-between items-end mb-6 border-b border-neutral-200 pb-2">
               <div>
@@ -640,7 +660,6 @@ export default function Home() {
                 <Link href={`/urun/${product.id}`} key={product.id} className="min-w-[200px] max-w-[200px] snap-start group cursor-pointer">
                   <div className="bg-neutral-100 aspect-[3/4] mb-3 overflow-hidden relative rounded-lg">
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
-                    {product.tag && <div className="absolute top-2 left-2 bg-[#db2777] text-white text-[9px] font-black px-2 py-0.5 rounded uppercase">{product.tag}</div>}
                   </div>
                   <h3 className="text-xs font-semibold text-neutral-700 line-clamp-1 group-hover:text-[#db2777]">{product.name}</h3>
                   <p className="text-[#db2777] font-black text-sm mt-0.5">{product.price},00 TL</p>
@@ -652,7 +671,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* 3. KOMBİN BÖLÜMÜ */}
+          {/* KOMBİN BÖLÜMÜ */}
           <section className="container mx-auto px-4">
             <div className="flex justify-between items-end mb-6 border-b border-neutral-200 pb-2">
               <div>
@@ -666,7 +685,6 @@ export default function Home() {
                 <Link href={`/urun/${product.id}`} key={product.id} className="min-w-[200px] max-w-[200px] snap-start group cursor-pointer">
                   <div className="bg-neutral-100 aspect-[3/4] mb-3 overflow-hidden relative rounded-lg">
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
-                    {/* Kombinlere özel siyah etiket */}
                     <div className="absolute top-2 left-2 bg-neutral-900 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase">TAM TAKIM</div>
                   </div>
                   <h3 className="text-xs font-semibold text-neutral-700 line-clamp-1 group-hover:text-[#db2777]">{product.name}</h3>
@@ -679,7 +697,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* 4. ÇANTA BÖLÜMÜ */}
+          {/* ÇANTA BÖLÜMÜ */}
           <section className="container mx-auto px-4">
             <div className="flex justify-between items-end mb-6 border-b border-neutral-200 pb-2">
               <div>
@@ -707,70 +725,65 @@ export default function Home() {
         </div>
       )}
 
-{/* 4. KURUMSAL E-TİCARET FOOTER (YAMAN MEDYA HAKLARIYLA) */}
+      {/* YENİ GELİŞMİŞ KURUMSAL FOOTER (Detay Sayfasıyla Aynı) */}
       <footer className="bg-neutral-900 text-neutral-300 pt-16 pb-8 border-t border-neutral-800 mt-20">
         <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-10">
           
           {/* Marka & Hakkında */}
           <div>
-            <h3 className="text-white text-2xl font-black mb-4 tracking-tighter">TUTU<span className="text-[#db2777]">✮⋆</span></h3>
+            <h3 className="text-white text-3xl font-black mb-4 tracking-tighter">TUTU<span className="text-[#db2777]">✮⋆</span></h3>
             <p className="text-sm text-neutral-400 leading-relaxed mb-6">
               Tarzınızı yansıtan, modern ve yenilikçi moda anlayışıyla her anınızda yanınızdayız. Kaliteyi hisset, tarzını yaşa.
             </p>
+            <div className="flex gap-4">
+              <a href="#" className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center hover:bg-[#db2777] hover:text-white transition"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg></a>
+              <a href="#" className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center hover:bg-[#db2777] hover:text-white transition"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a>
+            </div>
           </div>
 
-          {/* Müşteri Hizmetleri */}
+          {/* Kurumsal Bilgiler (KVKK, Hakkımızda vb) */}
           <div>
-            <h4 className="text-white font-bold mb-5 uppercase tracking-wider text-xs">Müşteri Hizmetleri</h4>
-            <ul className="space-y-3 text-sm">
-              <li><Link href="#" className="hover:text-[#db2777] transition">Sipariş Takibi</Link></li>
-              <li><Link href="#" className="hover:text-[#db2777] transition">Teslimat ve Kargo</Link></li>
-              <li><Link href="#" className="hover:text-[#db2777] transition">İade ve Değişim Şartları</Link></li>
-              <li><Link href="#" className="hover:text-[#db2777] transition">Beden Tablosu</Link></li>
+            <h4 className="text-white font-bold mb-5 uppercase tracking-widest text-xs border-b border-neutral-700 pb-2 inline-block">Kurumsal</h4>
+            <ul className="space-y-3 text-sm font-medium">
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>Hakkımızda</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>İletişim</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>KVKK - Gizlilik Politikası</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>Aydınlatma Metni</Link></li>
             </ul>
           </div>
 
-          {/* Kurumsal */}
+          {/* Alışveriş (İade, Sözleşme vb) */}
           <div>
-            <h4 className="text-white font-bold mb-5 uppercase tracking-wider text-xs">Kurumsal Bilgiler</h4>
-            <ul className="space-y-3 text-sm">
-              <li><Link href="#" className="hover:text-[#db2777] transition">Hakkımızda</Link></li>
-              <li><Link href="#" className="hover:text-[#db2777] transition">Mesafeli Satış Sözleşmesi</Link></li>
-              <li><Link href="#" className="hover:text-[#db2777] transition">Gizlilik ve Çerez Politikası</Link></li>
-              <li><Link href="#" className="hover:text-[#db2777] transition">İletişim</Link></li>
+            <h4 className="text-white font-bold mb-5 uppercase tracking-widest text-xs border-b border-neutral-700 pb-2 inline-block">Alışveriş</h4>
+            <ul className="space-y-3 text-sm font-medium">
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>Mesafeli Satış Sözleşmesi</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>Güvenli Alışveriş</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>İade & Değişim Koşulları</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>S.S.S (Sıkça Sorulanlar)</Link></li>
             </ul>
           </div>
 
-          {/* Güvenlik & İletişim */}
+          {/* Güvenlik & Ödeme */}
           <div>
-            <h4 className="text-white font-bold mb-5 uppercase tracking-wider text-xs">Güvenli Alışveriş</h4>
-            <p className="text-xs text-neutral-400 mb-4">256-bit SSL sertifikası ile %100 güvenli alışveriş altyapısı.</p>
-            <div className="flex gap-2 opacity-50 grayscale">
-              <div className="w-10 h-6 bg-white rounded border border-neutral-700 flex items-center justify-center text-[8px] font-bold text-neutral-900">VISA</div>
-              <div className="w-10 h-6 bg-white rounded border border-neutral-700 flex items-center justify-center text-[8px] font-bold text-neutral-900">MC</div>
-              <div className="w-10 h-6 bg-white rounded border border-neutral-700 flex items-center justify-center text-[8px] font-bold text-neutral-900">TROY</div>
+            <h4 className="text-white font-bold mb-5 uppercase tracking-widest text-xs border-b border-neutral-700 pb-2 inline-block">Güvenli Ödeme</h4>
+            <p className="text-xs text-neutral-400 mb-6 leading-relaxed">Sitemizdeki tüm işlemler 256-bit SSL şifreleme teknolojisi ile korunmaktadır. Kart bilgileriniz güvendedir.</p>
+            <div className="flex gap-2">
+              <div className="w-12 h-8 bg-white rounded border border-neutral-700 flex items-center justify-center text-[10px] font-black text-blue-900 shadow-inner">VISA</div>
+              <div className="w-12 h-8 bg-white rounded border border-neutral-700 flex items-center justify-center text-[10px] font-black text-red-600 shadow-inner">MC</div>
+              <div className="w-12 h-8 bg-white rounded border border-neutral-700 flex items-center justify-center text-[10px] font-black text-teal-600 shadow-inner">TROY</div>
             </div>
           </div>
 
         </div>
 
-        {/* YASAL UYARI VE YAMAN MEDYA HAKLARI */}
-        <div className="max-w-6xl mx-auto px-4 mt-16 pt-8 border-t border-neutral-800 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-neutral-500 font-medium">
-            © 2026 TUTU Giyim. Tüm Hakları <span className="font-bold text-white">Yaman Medya</span>'ya Aittir.
+        {/* Telif Hakkı (Yaman Medya) */}
+        <div className="max-w-6xl mx-auto px-4 mt-16 pt-8 border-t border-neutral-800 text-center">
+          <p className="text-xs text-neutral-500 font-medium tracking-wide">
+            © 2026 TUTU Giyim Platformu. Tüm Hakları <span className="font-bold text-white tracking-widest uppercase">Yaman Medya</span> Tarafından Saklıdır.
           </p>
-          <div className="flex gap-4">
-            <Link href="#" className="text-neutral-500 hover:text-white transition">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
-            </Link>
-            <Link href="#" className="text-neutral-500 hover:text-white transition">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
-            </Link>
-          </div>
         </div>
       </footer>
 
     </div>
   );
 }
-
