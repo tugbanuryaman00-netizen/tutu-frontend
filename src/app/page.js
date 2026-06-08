@@ -384,22 +384,62 @@ export default function Home() {
             ))}
           </nav>
 
-          {/* MODERN SEARCHBAR */}
-          <div className="hidden lg:flex items-center relative w-64 ml-4">
+      {/* MODERN SEARCHBAR VE CANLI ARAMA (DROPDOWN) */}
+          <div className="hidden lg:flex items-center relative w-72 ml-4">
             <input 
               type="text" 
               placeholder="Ürün, kategori veya etiket ara..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-neutral-100 text-sm px-4 py-2.5 rounded-full pl-10 border border-transparent focus:bg-white focus:border-[#db2777] focus:outline-none transition-all shadow-inner placeholder-neutral-400 font-medium"
+              className="w-full bg-neutral-100 text-sm px-4 py-2.5 rounded-full pl-10 border border-transparent focus:bg-white focus:border-[#db2777] focus:outline-none transition-all shadow-inner placeholder-neutral-400 font-medium relative z-50"
             />
-            <svg className="w-4 h-4 text-neutral-400 absolute left-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <svg className="w-4 h-4 text-neutral-400 absolute left-4 z-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             
             {/* Arama kelimesi varsa silme çarpısı */}
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute right-4 text-neutral-400 hover:text-neutral-700">
+              <button onClick={() => setSearchQuery('')} className="absolute right-4 text-neutral-400 hover:text-[#db2777] z-50 transition">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
+            )}
+
+            {/* ARAMA YAZILDIKÇA AÇILAN CANLI SONUÇ PENCERESİ */}
+            {searchQuery.length > 0 && (
+              <div className="absolute top-full mt-3 right-0 w-[350px] bg-white rounded-2xl shadow-2xl border border-neutral-100 overflow-hidden z-[100] max-h-[450px] overflow-y-auto">
+                {filteredProducts.length > 0 ? (
+                  <div className="py-2">
+                    <div className="px-4 py-3 bg-neutral-50 text-[10px] font-black text-neutral-400 uppercase tracking-widest border-b border-neutral-100 flex justify-between">
+                      <span>Arama Sonuçları</span>
+                      <span className="text-[#db2777]">{filteredProducts.length} Ürün</span>
+                    </div>
+                    {/* Sadece ilk 5 sonucu gösterir (Liste çok uzamasın diye) */}
+                    {filteredProducts.slice(0, 5).map((product) => (
+                      <Link 
+                        href={`/urun/${product.id}`} 
+                        key={product.id} 
+                        onClick={() => setSearchQuery('')} // Tıklayınca pencereyi kapat
+                        className="flex items-center gap-4 p-3 hover:bg-neutral-50 transition border-b border-neutral-50 last:border-0 group"
+                      >
+                        <div className="w-12 h-16 shrink-0 bg-neutral-100 rounded-md overflow-hidden border border-neutral-200">
+                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-neutral-800 truncate group-hover:text-[#db2777] transition">{product.name}</h4>
+                          <p className="text-[#db2777] font-black text-sm mt-0.5">{product.price},00 TL</p>
+                        </div>
+                        <div className="text-neutral-300 group-hover:text-[#db2777] pr-2 transition">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center flex flex-col items-center justify-center">
+                    <svg className="w-10 h-10 text-neutral-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <p className="text-sm text-neutral-500 font-bold">"{searchQuery}" ile ilgili ürün bulunamadı.</p>
+                    <p className="text-xs text-neutral-400 mt-1">Farklı bir kelime deneyin.</p>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
