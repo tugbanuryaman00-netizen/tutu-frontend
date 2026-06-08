@@ -378,14 +378,62 @@ export default function UrunDetay() {
       )}
 
       {/* YENİ GELİŞMİŞ KURUMSAL FOOTER */}
-      <footer className="bg-neutral-900 text-neutral-300 pt-16 pb-8 border-t border-neutral-800">
+      <footer className="bg-neutral-900 text-neutral-300 pt-16 pb-8 border-t border-neutral-800 mt-20">
         <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-10">
-          <div><h3 className="text-white text-3xl font-black mb-4 tracking-tighter">TUTU<span className="text-[#db2777]">✮⋆</span></h3><p className="text-sm text-neutral-400 mb-6">Tarzınızı yansıtan, modern ve yenilikçi moda anlayışıyla yanınızdayız.</p></div>
-          <div><h4 className="text-white font-bold mb-5 uppercase tracking-widest text-xs border-b border-neutral-700 pb-2 inline-block">Kurumsal</h4><ul className="space-y-3 text-sm font-medium"><li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2">Hakkımızda</Link></li><li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2">İletişim</Link></li><li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2">KVKK Politikası</Link></li></ul></div>
-          <div><h4 className="text-white font-bold mb-5 uppercase tracking-widest text-xs border-b border-neutral-700 pb-2 inline-block">Alışveriş</h4><ul className="space-y-3 text-sm font-medium"><li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2">Mesafeli Satış Sözleşmesi</Link></li><li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2">Güvenli Alışveriş</Link></li><li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2">İade & Değişim</Link></li></ul></div>
-          <div><h4 className="text-white font-bold mb-5 uppercase tracking-widest text-xs border-b border-neutral-700 pb-2 inline-block">Güvenli Ödeme</h4><p className="text-xs text-neutral-400 mb-6">256-bit SSL şifreleme ile kart bilgileriniz güvendedir.</p></div>
+          
+          {/* Marka & Hakkında */}
+          <div>
+            <h3 className="text-white text-3xl font-black mb-4 tracking-tighter">TUTU<span className="text-[#db2777]">✮⋆</span></h3>
+            <p className="text-sm text-neutral-400 leading-relaxed mb-6">
+              Tarzınızı yansıtan, modern ve yenilikçi moda anlayışıyla her anınızda yanınızdayız. Kaliteyi hisset, tarzını yaşa.
+            </p>
+            <div className="flex gap-4">
+              <a href="#" className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center hover:bg-[#db2777] hover:text-white transition"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg></a>
+              <a href="#" className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center hover:bg-[#db2777] hover:text-white transition"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg></a>
+            </div>
+          </div>
+
+          {/* Kurumsal Bilgiler (KVKK, Hakkımızda vb) */}
+          <div>
+            <h4 className="text-white font-bold mb-5 uppercase tracking-widest text-xs border-b border-neutral-700 pb-2 inline-block">Kurumsal</h4>
+            <ul className="space-y-3 text-sm font-medium">
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>Hakkımızda</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>İletişim</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>KVKK - Gizlilik Politikası</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>Aydınlatma Metni</Link></li>
+            </ul>
+          </div>
+
+          {/* Alışveriş (İade, Sözleşme vb) */}
+          <div>
+            <h4 className="text-white font-bold mb-5 uppercase tracking-widest text-xs border-b border-neutral-700 pb-2 inline-block">Alışveriş</h4>
+            <ul className="space-y-3 text-sm font-medium">
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>Mesafeli Satış Sözleşmesi</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>Güvenli Alışveriş</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>İade & Değişim Koşulları</Link></li>
+              <li><Link href="#" className="hover:text-[#db2777] transition flex items-center gap-2"><span className="w-1 h-1 bg-[#db2777] rounded-full"></span>S.S.S (Sıkça Sorulanlar)</Link></li>
+            </ul>
+          </div>
+
+          {/* Güvenlik & Ödeme */}
+          <div>
+            <h4 className="text-white font-bold mb-5 uppercase tracking-widest text-xs border-b border-neutral-700 pb-2 inline-block">Güvenli Ödeme</h4>
+            <p className="text-xs text-neutral-400 mb-6 leading-relaxed">Sitemizdeki tüm işlemler 256-bit SSL şifreleme teknolojisi ile korunmaktadır. Kart bilgileriniz güvendedir.</p>
+            <div className="flex gap-2">
+              <div className="w-12 h-8 bg-white rounded border border-neutral-700 flex items-center justify-center text-[10px] font-black text-blue-900 shadow-inner">VISA</div>
+              <div className="w-12 h-8 bg-white rounded border border-neutral-700 flex items-center justify-center text-[10px] font-black text-red-600 shadow-inner">MC</div>
+              <div className="w-12 h-8 bg-white rounded border border-neutral-700 flex items-center justify-center text-[10px] font-black text-teal-600 shadow-inner">TROY</div>
+            </div>
+          </div>
+
         </div>
-        <div className="max-w-6xl mx-auto px-4 mt-16 pt-8 border-t border-neutral-800 text-center"><p className="text-xs text-neutral-500 font-medium tracking-wide">© 2026 TUTU Giyim. Tüm Hakları <span className="font-bold text-white uppercase">Yaman Medya</span> Tarafından Saklıdır.</p></div>
+
+        {/* Telif Hakkı (Yaman Medya) */}
+        <div className="max-w-6xl mx-auto px-4 mt-16 pt-8 border-t border-neutral-800 text-center">
+          <p className="text-xs text-neutral-500 font-medium tracking-wide">
+            © 2026 TUTU Giyim Platformu. Tüm Hakları <span className="font-bold text-white tracking-widest uppercase">Yaman Medya</span> Tarafından Saklıdır.
+          </p>
+        </div>
       </footer>
     </div>
   );
