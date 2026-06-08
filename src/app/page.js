@@ -70,6 +70,7 @@ export default function Home() {
     name: '', phone: '', city: '', district: '', neighborhood: '', address: '', saveAddress: false 
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true); 
@@ -371,11 +372,11 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
           
           {/* LOGO */}
-          <Link href="/" className="text-3xl font-black tracking-tighter text-neutral-900">
+          <Link href="/" className="text-3xl font-black tracking-tighter text-neutral-900 shrink-0">
             TUTU<span className="text-[#db2777]">✮⋆</span>
           </Link>
 
-          {/* KATEGORİLER (Filtreleme Motorun Aynen Korundu) */}
+          {/* KATEGORİLER (Sadece PC'de görünür) */}
           <nav className="hidden md:flex space-x-8 font-medium text-sm text-neutral-500">
             {['TÜMÜ', 'GİYİM', 'ÇANTA', 'AKSESUAR'].map((cat) => (
               <button key={cat} onClick={() => { setActiveCategory(cat); }} className={`transition duration-300 ${activeCategory === cat ? 'text-[#db2777] font-bold border-b-2 border-[#db2777]' : 'hover:text-[#db2777]'}`}>
@@ -384,7 +385,7 @@ export default function Home() {
             ))}
           </nav>
 
-      {/* MODERN SEARCHBAR VE CANLI ARAMA (DROPDOWN) */}
+          {/* MODERN SEARCHBAR (Sadece PC'de Açık Halde Görünür) */}
           <div className="hidden lg:flex items-center relative w-72 ml-4">
             <input 
               type="text" 
@@ -393,32 +394,24 @@ export default function Home() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-neutral-100 text-sm px-4 py-2.5 rounded-full pl-10 border border-transparent focus:bg-white focus:border-[#db2777] focus:outline-none transition-all shadow-inner placeholder-neutral-400 font-medium relative z-50"
             />
-            <svg className="w-4 h-4 text-neutral-400 absolute left-4 z-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <svg className="w-4 h-4 text-neutral-400 absolute left-4 z-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             
-            {/* Arama kelimesi varsa silme çarpısı */}
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute right-4 text-neutral-400 hover:text-[#db2777] z-50 transition">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             )}
 
-            {/* ARAMA YAZILDIKÇA AÇILAN CANLI SONUÇ PENCERESİ */}
+            {/* PC CANLI SONUÇ PENCERESİ */}
             {searchQuery.length > 0 && (
               <div className="absolute top-full mt-3 right-0 w-[350px] bg-white rounded-2xl shadow-2xl border border-neutral-100 overflow-hidden z-[100] max-h-[450px] overflow-y-auto">
                 {filteredProducts.length > 0 ? (
                   <div className="py-2">
                     <div className="px-4 py-3 bg-neutral-50 text-[10px] font-black text-neutral-400 uppercase tracking-widest border-b border-neutral-100 flex justify-between">
-                      <span>Arama Sonuçları</span>
-                      <span className="text-[#db2777]">{filteredProducts.length} Ürün</span>
+                      <span>Arama Sonuçları</span><span className="text-[#db2777]">{filteredProducts.length} Ürün</span>
                     </div>
-                    {/* Sadece ilk 5 sonucu gösterir (Liste çok uzamasın diye) */}
                     {filteredProducts.slice(0, 5).map((product) => (
-                      <Link 
-                        href={`/urun/${product.id}`} 
-                        key={product.id} 
-                        onClick={() => setSearchQuery('')} // Tıklayınca pencereyi kapat
-                        className="flex items-center gap-4 p-3 hover:bg-neutral-50 transition border-b border-neutral-50 last:border-0 group"
-                      >
+                      <Link href={`/urun/${product.id}`} key={product.id} onClick={() => setSearchQuery('')} className="flex items-center gap-4 p-3 hover:bg-neutral-50 transition border-b border-neutral-50 last:border-0 group">
                         <div className="w-12 h-16 shrink-0 bg-neutral-100 rounded-md overflow-hidden border border-neutral-200">
                           <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
                         </div>
@@ -434,23 +427,29 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="p-8 text-center flex flex-col items-center justify-center">
-                    <svg className="w-10 h-10 text-neutral-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <p className="text-sm text-neutral-500 font-bold">"{searchQuery}" ile ilgili ürün bulunamadı.</p>
-                    <p className="text-xs text-neutral-400 mt-1">Farklı bir kelime deneyin.</p>
+                    <svg className="w-10 h-10 text-neutral-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <p className="text-sm text-neutral-500 font-bold">Bulunamadı.</p>
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          {/* MODERN İKONLAR (GİRİŞ/HESABIM VE SEPET) */}
-          <div className="flex items-center gap-6">
+          {/* İKONLAR (Mobilde Arama İkonu Ekli) */}
+          <div className="flex items-center gap-5 md:gap-6 shrink-0">
             
+            {/* MOBİL ARAMA İKONU (Sadece Mobilde Görünür) */}
+            <button onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)} className="flex lg:hidden flex-col items-center text-neutral-600 hover:text-[#db2777] transition group">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1 group-hover:-translate-y-0.5 transition-transform">
+                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <span className="text-[10px] font-bold">Ara</span>
+            </button>
+
             {/* Hesabım İkonu */}
             <button onClick={() => user ? window.location.href='/hesabim' : setIsAuthModalOpen(true)} className="flex flex-col items-center text-neutral-600 hover:text-[#db2777] transition group">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1 group-hover:-translate-y-0.5 transition-transform">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
               </svg>
               <span className="text-[10px] font-bold">{user ? 'Hesabım' : 'Giriş Yap'}</span>
             </button>
@@ -458,22 +457,70 @@ export default function Home() {
             {/* Sepet İkonu */}
             <button onClick={() => setIsCartOpen(true)} className="flex flex-col items-center text-neutral-600 hover:text-[#db2777] transition group relative">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mb-1 group-hover:-translate-y-0.5 transition-transform">
-                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path>
-                <path d="M3 6h18"></path>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"></path>
               </svg>
               <span className="text-[10px] font-bold">Sepetim</span>
-              
-              {/* Sepet Dinamik Rozeti */}
               {cart.length > 0 && (
-                <span className="absolute -top-1 -right-2 bg-[#db2777] text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
-                  {cart.length}
-                </span>
+                <span className="absolute -top-1 -right-2 bg-[#db2777] text-white text-[9px] font-black w-4 h-4 flex items-center justify-center rounded-full shadow-sm">{cart.length}</span>
               )}
             </button>
 
           </div>
         </div>
+
+        {/* MOBİL İÇİN AŞAĞI AÇILAN CANLI ARAMA PANELİ */}
+        {isMobileSearchOpen && (
+          <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-neutral-200 shadow-xl z-[100] p-4 animate-in fade-in slide-in-from-top-2">
+            <div className="relative mb-4">
+              <input 
+                type="text" 
+                placeholder="Örn: Siyah elbise, çanta..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoFocus
+                className="w-full bg-neutral-100 text-sm px-4 py-3.5 rounded-xl pl-12 border border-transparent focus:bg-white focus:border-[#db2777] focus:outline-none transition-all shadow-sm font-medium"
+              />
+              <svg className="w-5 h-5 text-neutral-400 absolute left-4 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="absolute right-4 top-3.5 text-neutral-400 hover:text-[#db2777]">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+              )}
+            </div>
+
+            {searchQuery.length > 0 && (
+              <div className="max-h-[60vh] overflow-y-auto">
+                {filteredProducts.length > 0 ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="text-[10px] font-black text-neutral-400 uppercase tracking-widest flex justify-between border-b border-neutral-100 pb-2 mb-2">
+                      <span>Sonuçlar</span><span className="text-[#db2777]">{filteredProducts.length} Ürün</span>
+                    </div>
+                    {filteredProducts.slice(0, 5).map((product) => (
+                      <Link 
+                        href={`/urun/${product.id}`} 
+                        key={product.id} 
+                        onClick={() => { setSearchQuery(''); setIsMobileSearchOpen(false); }}
+                        className="flex items-center gap-4 bg-white p-2 rounded-lg hover:bg-neutral-50 active:bg-neutral-100 transition border border-transparent"
+                      >
+                        <div className="w-12 h-16 shrink-0 bg-neutral-100 rounded border border-neutral-200 overflow-hidden">
+                          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-bold text-neutral-800 truncate">{product.name}</h4>
+                          <p className="text-[#db2777] font-black text-sm mt-0.5">{product.price},00 TL</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-6 text-center">
+                    <p className="text-sm text-neutral-500 font-bold">"{searchQuery}" için sonuç bulunamadı.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
 
