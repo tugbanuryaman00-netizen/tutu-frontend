@@ -220,8 +220,11 @@ export default function AdminPanel() {
         });
         
         // Inputları temizle
-        document.getElementById('mainImageUpload').value = '';
-        document.getElementById('extraImageUpload').value = '';
+       // Inputları temizle
+        if(document.getElementById('mainImageUpload')) document.getElementById('mainImageUpload').value = '';
+        if(document.getElementById('extraImageUpload1')) document.getElementById('extraImageUpload1').value = '';
+        if(document.getElementById('extraImageUpload2')) document.getElementById('extraImageUpload2').value = '';
+        if(document.getElementById('extraImageUpload3')) document.getElementById('extraImageUpload3').value = '';
 
         fetchProducts();
       } else {
@@ -352,23 +355,37 @@ export default function AdminPanel() {
               </div>
 
               {/* 5. ÇOKLU GALERİ RESMİ YÜKLEME ALANI */}
+{/* 5. ÇOKLU GALERİ RESMİ YÜKLEME ALANI */}
               <div className="border-2 border-dashed border-neutral-300 rounded-xl p-6 bg-white">
                 <h3 className="text-sm font-bold text-neutral-800 mb-4 flex items-center gap-2">
                   <svg className="w-5 h-5 text-[#db2777]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                   Ürün Görselleri (Sırayla Yükleyin)
                 </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Ana Resim Yükleyici */}
-                  <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-100">
-                    <label className="block text-xs font-bold text-neutral-500 mb-2">1. Ana Ürün Görseli * (Zorunlu)</label>
-                    <input type="file" id="mainImageUpload" accept="image/*" onChange={(e) => handleImageUpload(e, 'main')} className="w-full text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-pink-100 file:text-pink-700 cursor-pointer" />
+                {/* 4 LÜ YÜKLEME KUTULARI GRİDİ */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Ana Resim */}
+                  <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100 flex flex-col justify-center">
+                    <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">1. Ana Görsel *</label>
+                    <input type="file" id="mainImageUpload" accept="image/*" onChange={(e) => handleImageUpload(e, 'main')} className="w-full text-xs text-neutral-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-pink-100 file:text-pink-700 cursor-pointer" />
                   </div>
                   
-                  {/* Ekstra Resim Yükleyici */}
-                  <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-100">
-                    <label className="block text-xs font-bold text-neutral-500 mb-2">2. Farklı Açı / Detay (Opsiyonel)</label>
-                    <input type="file" id="extraImageUpload" accept="image/*" disabled={!formData.image_url} onChange={(e) => handleImageUpload(e, 'extra')} className="w-full text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-neutral-200 file:text-neutral-700 cursor-pointer disabled:opacity-50" />
+                  {/* Ekstra 1 */}
+                  <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100 flex flex-col justify-center">
+                    <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">2. Detay / Yan</label>
+                    <input type="file" id="extraImageUpload1" accept="image/*" disabled={!formData.image_url} onChange={(e) => handleImageUpload(e, 'extra')} className="w-full text-xs text-neutral-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-neutral-200 file:text-neutral-700 cursor-pointer disabled:opacity-50" />
+                  </div>
+
+                  {/* Ekstra 2 */}
+                  <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100 flex flex-col justify-center">
+                    <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">3. Arka / Uzak</label>
+                    <input type="file" id="extraImageUpload2" accept="image/*" disabled={!formData.image_url} onChange={(e) => handleImageUpload(e, 'extra')} className="w-full text-xs text-neutral-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-neutral-200 file:text-neutral-700 cursor-pointer disabled:opacity-50" />
+                  </div>
+
+                  {/* Ekstra 3 */}
+                  <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100 flex flex-col justify-center">
+                    <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">4. Yakın Çekim</label>
+                    <input type="file" id="extraImageUpload3" accept="image/*" disabled={!formData.image_url} onChange={(e) => handleImageUpload(e, 'extra')} className="w-full text-xs text-neutral-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-neutral-200 file:text-neutral-700 cursor-pointer disabled:opacity-50" />
                   </div>
                 </div>
 
@@ -389,7 +406,6 @@ export default function AdminPanel() {
                     </div>
                   </div>
                 )}
-              </div>
 
               <button type="submit" disabled={status.type === 'loading'} className="w-full bg-neutral-900 text-white font-bold py-5 rounded-xl disabled:bg-neutral-400 hover:bg-[#db2777] transition shadow-[0_10px_20px_rgba(0,0,0,0.1)] hover:shadow-[0_10px_25px_rgba(219,39,119,0.3)] tracking-widest text-lg">
                 YENİ ÜRÜNÜ YAYINLA
