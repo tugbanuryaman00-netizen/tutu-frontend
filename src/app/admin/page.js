@@ -8,26 +8,33 @@ export default function AdminPanel() {
   
   const [activeTab, setActiveTab] = useState('add');
   
-  // SEO İÇİN EKLENDİ: description alanı formData içine dahil edildi
-  // useState içindeki formData başlangıcını şu şekilde güncelle:
-const [formData, setFormData] = useState({ 
-  name: '', price: '', category: 'GİYİM', tag: '', is_new: false, image_url: '', stock: '', description: '' 
-});
+  // YENİ EKLENENLER: formData içine SEO (description), Galeri Resimleri ve Dinamik Renk/Beden eklendi.
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    price: '', 
+    category: 'ÜST GİYİM', 
+    tag: '', 
+    is_new: false, 
+    image_url: '', 
+    gallery_images: [], // Çoklu resimler için dizi
+    stock: '', 
+    description: '',
+    colors: 'Siyah, Beyaz', // Varsayılan renkler
+    sizes: 'S, M, L' // Varsayılan bedenler
+  });
+  
   const [status, setStatus] = useState({ type: '', message: '' });
   const [productList, setProductList] = useState([]);
   const [logList, setLogList] = useState([]);
   
   const [editingId, setEditingId] = useState(null);
-  
-  // SEO İÇİN EKLENDİ: description alanı düzenleme (edit) formuna dahil edildi
-  const [editFormData, setEditFormData] = useState({ name: '', price: '', description: '' });
+  const [editFormData, setEditFormData] = useState({ name: '', price: '', description: '', colors: '', sizes: '' });
 
   const [isProductsLoading, setIsProductsLoading] = useState(true);
   const [productFetchError, setProductFetchError] = useState('');
   const [orderList, setOrderList] = useState([]);
   const statusSteps = ['Hazırlanıyor', 'Kargoya Verildi', 'Kargo Şubesinde', 'Dağıtıma Çıktı', 'Teslim Edildi', 'İptal Edildi'];
 
-  // Sayfa açıldığında hafızada yetki var mı kontrol et
   useEffect(() => {
     const token = sessionStorage.getItem('tutu_admin_token');
     if (token) {
@@ -36,14 +43,12 @@ const [formData, setFormData] = useState({
     }
   }, []);
 
-  // Giriş Yapma
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const response = await fetch('https://tutu-backend-api.onrender.com/api/logs', {
         headers: { 'Authorization': passwordInput }
       });
-      
       if (response.status === 403) {
         alert('Hatalı Şifre!');
       } else {
@@ -102,10 +107,7 @@ const [formData, setFormData] = useState({
     try {
       const response = await fetch(`https://tutu-backend-api.onrender.com/api/products/${id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': adminToken
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': adminToken },
         body: JSON.stringify(editFormData)
       });
       const data = await response.json();
@@ -121,10 +123,7 @@ const [formData, setFormData] = useState({
     try {
       const response = await fetch(`https://tutu-backend-api.onrender.com/api/orders/${orderId}/status`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': adminToken
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': adminToken },
         body: JSON.stringify({ status: newStatus })
       });
       const data = await response.json();
@@ -147,28 +146,32 @@ const [formData, setFormData] = useState({
     } catch (error) {}
   };
 
-  const handleImageUpload = async (e) => {
+  // 1 NUMARALI GÜNCELLEME: ÇOKLU RESİM YÜKLEME MOTORU (Cloudinary)
+  const handleImageUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setStatus({ type: 'loading', message: 'Resim Cloudinary sunucusuna yükleniyor...' });
-
     const uploadData = new FormData();
     uploadData.append('file', file);
     uploadData.append('upload_preset', 'tutu_uploads');
-
     const cloudinaryUrl = 'https://api.cloudinary.com/v1_1/denlwno3i/image/upload';
 
     try {
-      const res = await fetch(cloudinaryUrl, {
-        method: 'POST',
-        body: uploadData,
-      });
+      const res = await fetch(cloudinaryUrl, { method: 'POST', body: uploadData });
       const data = await res.json();
 
       if (data.secure_url) {
-        setFormData({ ...formData, image_url: data.secure_url });
-        setStatus({ type: 'success', message: 'Resim başarıyla yüklendi! Ürünü ekleyebilirsiniz.' });
+        if (type === 'main') {
+          // Ana resim ve galerinin ilk resmi
+          setFormData({ ...formData, image_url: data.secure_url, gallery_images: [data.secure_url, ...formData.gallery_images.slice(1)] });
+        } else {
+          // Ekstra resimleri galeriye ekleme
+          const newGallery = [...formData.gallery_images];
+          newGallery.push(data.secure_url);
+          setFormData({ ...formData, gallery_images: newGallery });
+        }
+        setStatus({ type: 'success', message: 'Resim başarıyla yüklendi! Daha fazla ekleyebilir veya kaydedebilirsiniz.' });
       } else {
         setStatus({ type: 'error', message: 'Resim yükleme hatası. Cloudinary ayarlarınızı kontrol edin.' });
       }
@@ -177,33 +180,48 @@ const [formData, setFormData] = useState({
     }
   };
 
+  // Eklenen resmi galeriden silme fonksiyonu
+  const removeGalleryImage = (indexToRemove) => {
+    const newGallery = formData.gallery_images.filter((_, index) => index !== indexToRemove);
+    // Eğer silinen ana resimse, image_url'yi de temizle
+    if (indexToRemove === 0) setFormData({ ...formData, image_url: newGallery[0] || '', gallery_images: newGallery });
+    else setFormData({ ...formData, gallery_images: newGallery });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.image_url) {
-      setStatus({ type: 'error', message: 'Lütfen önce bir ürün fotoğrafı yükleyin!' });
+      setStatus({ type: 'error', message: 'Lütfen önce Ana Ürün Fotoğrafını yükleyin!' });
       return;
     }
 
     setStatus({ type: 'loading', message: 'Ekleniyor...' });
+    
+    // Gönderilmeden önce gallery_images array'ini JSON string'e çevirmemiz lazım (Veritabanı için)
+    const dataToSubmit = {
+      ...formData,
+      gallery_images: JSON.stringify(formData.gallery_images) 
+    };
+
     try {
       const response = await fetch('https://tutu-backend-api.onrender.com/api/products', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': adminToken
-        },
-        body: JSON.stringify(formData)
+        headers: { 'Content-Type': 'application/json', 'Authorization': adminToken },
+        body: JSON.stringify(dataToSubmit)
       });
       const data = await response.json();
       if (data.success) {
         setStatus({ type: 'success', message: 'Ürün Başarıyla Eklendi!' });
         
-        // SEO İÇİN EKLENDİ: Form temizlenirken description da sıfırlanıyor
-        setFormData({ name: '', price: '', category: 'GİYİM', tag: '', is_new: false, image_url: '', stock: '', description: '' });
+        // Formu tertemiz sıfırla
+        setFormData({ 
+          name: '', price: '', category: 'ÜST GİYİM', tag: '', is_new: false, 
+          image_url: '', gallery_images: [], stock: '', description: '', colors: 'Siyah, Beyaz', sizes: 'S, M, L' 
+        });
         
-        // Dosya seçiciyi temizle
-        const fileInput = document.getElementById('imageUploadInput');
-        if (fileInput) fileInput.value = '';
+        // Inputları temizle
+        document.getElementById('mainImageUpload').value = '';
+        document.getElementById('extraImageUpload').value = '';
 
         fetchProducts();
       } else {
@@ -216,8 +234,13 @@ const [formData, setFormData] = useState({
 
   const startEdit = (product) => {
     setEditingId(product.id);
-    // SEO İÇİN EKLENDİ: Düzenlemeye başlarken açıklamayı da alıyor
-    setEditFormData({ name: product.name, price: product.price, description: product.description || '' });
+    setEditFormData({ 
+      name: product.name, 
+      price: product.price, 
+      description: product.description || '',
+      colors: product.colors || '', // Eğer db'de colors yoksa boş gelsin
+      sizes: product.sizes || ''
+    });
   };
 
   const handleChange = (e) => {
@@ -250,7 +273,8 @@ const [formData, setFormData] = useState({
 
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col md:flex-row">
-      <div className="w-full md:w-64 md:min-h-screen bg-neutral-900 text-white flex flex-col">
+      {/* SOL MENÜ AYNEN KORUNDU */}
+      <div className="w-full md:w-64 md:min-h-screen bg-neutral-900 text-white flex flex-col shrink-0">
         <div className="p-6 border-b border-neutral-800"><h1 className="text-2xl font-extrabold tracking-tighter">TUTU<span className="text-[#db2777]">✮⋆</span></h1></div>
         <nav className="flex-1 p-4 space-y-2">
           <button onClick={() => setActiveTab('add')} className={`w-full text-left px-4 py-3 rounded-md font-semibold transition ${activeTab === 'add' ? 'bg-[#db2777]' : 'text-neutral-400 hover:text-white'}`}>📦 Yeni Ürün Ekle</button>
@@ -263,126 +287,182 @@ const [formData, setFormData] = useState({
 
       <div className="flex-1 p-4 md:p-10 overflow-y-auto">
         
-        {/* YENİ ÜRÜN */}
+        {/* ==================================================== */}
+        {/* YENİ ÜRÜN EKLEME (TAMAMEN GELİŞTİRİLMİŞ VERSİYON) */}
+        {/* ==================================================== */}
         {activeTab === 'add' && (
-          <div className="max-w-2xl bg-white p-5 md:p-8 rounded-xl shadow-sm border border-neutral-100">
-            <h2 className="text-2xl font-bold mb-6">Yeni Ürün Ekle</h2>
-            {status.message && <p className={`mb-4 text-sm font-bold ${status.type === 'success' ? 'text-green-600' : status.type === 'error' ? 'text-red-500' : 'text-blue-600'}`}>{status.message}</p>}
+          <div className="max-w-3xl bg-white p-6 md:p-10 rounded-xl shadow-sm border border-neutral-100">
+            <h2 className="text-2xl font-bold mb-6 text-neutral-800 border-b pb-4">Detaylı Yeni Ürün Ekle</h2>
+            {status.message && <p className={`mb-6 p-4 rounded-lg text-sm font-bold ${status.type === 'success' ? 'bg-green-50 text-green-700' : status.type === 'error' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>{status.message}</p>}
+            
             <form onSubmit={handleSubmit} className="space-y-6">
               
-              <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]" placeholder="Ürün Adı (Örn: Siyah Oversize Tişört)" />
+              {/* 1. Ürün Adı ve Fiyat */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Ürün Adı *</label>
+                  <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777] bg-neutral-50" placeholder="Örn: Siyah Oversize Tişört" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Fiyat (TL) *</label>
+                  <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777] bg-neutral-50 font-bold text-[#db2777]" placeholder="Örn: 850" />
+                </div>
+              </div>
               
-              {/* SEO İÇİN EKLENDİ: Detaylı Açıklama (Description) Formu */}
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-neutral-700">Ürün Açıklaması (SEO Optimizasyonu)</label>
-                <textarea 
-                  name="description" 
-                  value={formData.description} 
-                  onChange={handleChange} 
-                  required 
-                  className="w-full px-4 py-3 border rounded-lg h-24 resize-none focus:outline-none focus:border-[#db2777]" 
-                  placeholder="Google'da öne çıkması için kumaş, renk, kesim ve kullanım detaylarını yazın. Örn: %100 pamuklu, nefes alabilen yazlık kadın elbise..." 
-                />
-                <p className="text-[11px] text-neutral-500 font-medium">Ne kadar detaylı ve anahtar kelime odaklı yazarsanız arama motorlarında o kadar üstte çıkarsınız.</p>
+              {/* 2. SEO Açıklaması */}
+              <div>
+                <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Ürün Açıklaması (SEO) *</label>
+                <textarea name="description" value={formData.description} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg h-24 resize-none focus:outline-none focus:border-[#db2777] bg-neutral-50" placeholder="Google'da öne çıkması için kumaş, renk, kesim ve kullanım detaylarını yazın..." />
               </div>
 
-              {/* CLOUDINARY RESİM YÜKLEME ALANI */}
-              <div className="border border-dashed border-neutral-300 rounded-lg p-6 text-center bg-neutral-50">
-                <label className="block text-sm font-bold text-neutral-700 mb-2">Ürün Fotoğrafı Yükle</label>
-                <input 
-                  type="file" 
-                  id="imageUploadInput"
-                  accept="image/*" 
-                  onChange={handleImageUpload} 
-                  className="w-full text-sm text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100 cursor-pointer"
-                />
-                {formData.image_url && (
-                  <div className="mt-4 flex flex-col items-center">
-                    <span className="text-xs text-green-600 font-bold mb-2">✓ Resim Hazır</span>
-                    <img src={formData.image_url} alt="Önizleme" className="h-32 object-contain rounded shadow-sm" />
+              {/* 3. Dinamik Renk ve Beden Girişi */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-neutral-50 p-4 rounded-xl border border-neutral-100">
+                <div>
+                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Mevcut Renkler (Virgülle Ayırın)</label>
+                  <input type="text" name="colors" value={formData.colors} onChange={handleChange} className="w-full px-4 py-2 border rounded focus:outline-none focus:border-[#db2777]" placeholder="Örn: Siyah, Beyaz, Ekru" />
+                  <p className="text-[10px] text-neutral-400 mt-1">Ürün detay sayfasında yan yana kutu olarak çıkar.</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Mevcut Bedenler (Virgülle Ayırın)</label>
+                  <input type="text" name="sizes" value={formData.sizes} onChange={handleChange} className="w-full px-4 py-2 border rounded focus:outline-none focus:border-[#db2777]" placeholder="Örn: S, M, L, XL veya Standart" />
+                </div>
+              </div>
+
+              {/* 4. Kategori, Etiket, Stok */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Vitrin (Kategori) *</label>
+                  <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777] font-bold text-neutral-700 bg-neutral-50">
+                    <option value="ÜST GİYİM">ÜST GİYİM</option>
+                    <option value="SEZON">SEZONUN ÖNE ÇIKANLARI</option>
+                    <option value="ALT GİYİM">ALT GİYİM</option>
+                    <option value="KOMBİN">KOMBİN</option>
+                    <option value="ÇANTA">ÇANTA</option>
+                    <option value="AKSESUAR">AKSESUAR</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Rozet / Etiket</label>
+                  <input type="text" name="tag" value={formData.tag} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777] bg-neutral-50" placeholder="Örn: ÇOK SATAN" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Stok Adedi *</label>
+                  <input type="number" name="stock" value={formData.stock} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777] bg-neutral-50" placeholder="0" />
+                </div>
+              </div>
+
+              {/* 5. ÇOKLU GALERİ RESMİ YÜKLEME ALANI */}
+              <div className="border-2 border-dashed border-neutral-300 rounded-xl p-6 bg-white">
+                <h3 className="text-sm font-bold text-neutral-800 mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-[#db2777]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                  Ürün Görselleri (Sırayla Yükleyin)
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Ana Resim Yükleyici */}
+                  <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-100">
+                    <label className="block text-xs font-bold text-neutral-500 mb-2">1. Ana Ürün Görseli * (Zorunlu)</label>
+                    <input type="file" id="mainImageUpload" accept="image/*" onChange={(e) => handleImageUpload(e, 'main')} className="w-full text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-pink-100 file:text-pink-700 cursor-pointer" />
+                  </div>
+                  
+                  {/* Ekstra Resim Yükleyici */}
+                  <div className="bg-neutral-50 p-4 rounded-lg border border-neutral-100">
+                    <label className="block text-xs font-bold text-neutral-500 mb-2">2. Farklı Açı / Detay (Opsiyonel)</label>
+                    <input type="file" id="extraImageUpload" accept="image/*" disabled={!formData.image_url} onChange={(e) => handleImageUpload(e, 'extra')} className="w-full text-xs text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-neutral-200 file:text-neutral-700 cursor-pointer disabled:opacity-50" />
+                  </div>
+                </div>
+
+                {/* Yüklenen Resimlerin Önizlemesi */}
+                {formData.gallery_images.length > 0 && (
+                  <div className="mt-6 border-t border-neutral-100 pt-4">
+                    <p className="text-xs font-bold text-neutral-400 mb-3">Yüklenen Galeri ({formData.gallery_images.length} Resim)</p>
+                    <div className="flex gap-4 overflow-x-auto pb-2">
+                      {formData.gallery_images.map((imgUrl, index) => (
+                        <div key={index} className="relative group w-24 h-32 shrink-0 rounded-md overflow-hidden border-2 border-neutral-200">
+                          {index === 0 && <span className="absolute top-0 left-0 bg-[#db2777] text-white text-[8px] font-black px-1.5 py-0.5 z-10 w-full text-center">ANA RESİM</span>}
+                          <img src={imgUrl} className="w-full h-full object-cover" />
+                          <button type="button" onClick={() => removeGalleryImage(index)} className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]" placeholder="Fiyat (TL)" />
-                <input type="number" name="stock" value={formData.stock} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]" placeholder="Stok Adedi" />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                // Yeni Kategori Listesi
-<select 
-  name="category" 
-  value={formData.category} 
-  onChange={handleChange} 
-  className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]"
->
-  <option value="GİYİM">ÜST GİYİM</option>
-  <option value="SEZON">SEZONUN ÖNE ÇIKANLARI</option>
-  <option value="ALT GİYİM">ALT GİYİM</option>
-  <option value="KOMBİN">KOMBİN</option>
-  <option value="ÇANTA">ÇANTA</option>
-  <option value="AKSESUAR">AKSESUAR</option>
-</select>
-                <input type="text" name="tag" value={formData.tag} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]" placeholder="Etiket (Örn: ÇOK SATAN)" />
-              </div>
-
-              <button type="submit" disabled={status.type === 'loading'} className="w-full bg-neutral-900 text-white font-bold py-4 rounded-lg disabled:bg-neutral-400 hover:bg-[#db2777] transition shadow-lg tracking-widest">
-                ÜRÜNÜ YAYINLA
+              <button type="submit" disabled={status.type === 'loading'} className="w-full bg-neutral-900 text-white font-bold py-5 rounded-xl disabled:bg-neutral-400 hover:bg-[#db2777] transition shadow-[0_10px_20px_rgba(0,0,0,0.1)] hover:shadow-[0_10px_25px_rgba(219,39,119,0.3)] tracking-widest text-lg">
+                YENİ ÜRÜNÜ YAYINLA
               </button>
             </form>
           </div>
         )}
 
-        {/* ÜRÜN LİSTESİ */}
+        {/* ==================================================== */}
+        {/* ÜRÜN LİSTESİ VE DÜZENLEME (EDİT) KISMI */}
+        {/* ==================================================== */}
         {activeTab === 'list' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
-            <h2 className="text-2xl font-bold mb-6">Mevcut Ürünler</h2>
+            <h2 className="text-2xl font-bold mb-6 border-b pb-4">Mevcut Ürünleriniz</h2>
             
-            {isProductsLoading ? <p className="text-neutral-500">Ürünler yükleniyor...</p> : 
+            {isProductsLoading ? <p className="text-neutral-500 font-bold">Ürünler çekiliyor...</p> : 
              productFetchError ? <div className="p-5 bg-red-50 text-red-600 rounded-xl font-bold">❌ Hata: {productFetchError}</div> : 
-             productList.length === 0 ? <div className="p-10 bg-neutral-50 text-neutral-500 text-center rounded-xl border border-dashed">Sistemde ürün bulunmuyor.</div> : 
+             productList.length === 0 ? <div className="p-10 bg-neutral-50 text-neutral-500 text-center rounded-xl border border-dashed">Sistemde henüz ürün yok.</div> : 
             (
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="border-b text-sm font-semibold text-neutral-500">
-                      <th className="py-3 px-4">Görsel</th>
-                      <th className="py-3 px-4">Ürün Detayı</th>
-                      <th className="py-3 px-4">Fiyat</th>
-                      <th className="py-3 px-4">İşlem</th>
+                    <tr className="border-b-2 border-neutral-200 text-xs font-black text-neutral-400 uppercase tracking-widest bg-neutral-50">
+                      <th className="py-4 px-4 rounded-tl-lg">Vitrin</th>
+                      <th className="py-4 px-4">Ürün Bilgileri</th>
+                      <th className="py-4 px-4">Fiyat</th>
+                      <th className="py-4 px-4 rounded-tr-lg">İşlem</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm">
                     {productList.map((p, idx) => (
-                      <tr key={p.id || idx} className="border-b hover:bg-neutral-50 transition">
+                      <tr key={p.id || idx} className="border-b border-neutral-100 hover:bg-neutral-50 transition">
                         {editingId === p.id ? (
                           <>
-                            <td className="py-3 px-4"><img src={p.image_url} className="w-12 h-12 object-cover rounded border" /></td>
-                            <td className="py-3 px-4 flex flex-col gap-2">
-                              <input type="text" value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} className="w-full px-3 py-2 border rounded-lg font-bold" placeholder="Ürün Adı" />
-                              <textarea value={editFormData.description} onChange={e => setEditFormData({...editFormData, description: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs h-16 resize-none" placeholder="Ürün Açıklaması" />
+                            {/* DÜZENLEME (EDIT) MODU */}
+                            <td className="py-4 px-4 align-top"><img src={p.image_url} className="w-16 h-20 object-cover rounded-md border shadow-sm" /></td>
+                            <td className="py-4 px-4 flex flex-col gap-3">
+                              <input type="text" value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} className="w-full px-3 py-2 border border-blue-200 rounded font-bold focus:outline-none focus:border-blue-500" placeholder="Ürün Adı" />
+                              <textarea value={editFormData.description} onChange={e => setEditFormData({...editFormData, description: e.target.value})} className="w-full px-3 py-2 border border-blue-200 rounded text-xs h-16 resize-none focus:outline-none focus:border-blue-500" placeholder="SEO Açıklaması" />
+                              <div className="flex gap-2">
+                                <input type="text" value={editFormData.colors} onChange={e => setEditFormData({...editFormData, colors: e.target.value})} className="flex-1 px-3 py-1 border border-blue-200 rounded text-xs" placeholder="Renkler (Örn: Siyah, Beyaz)" />
+                                <input type="text" value={editFormData.sizes} onChange={e => setEditFormData({...editFormData, sizes: e.target.value})} className="flex-1 px-3 py-1 border border-blue-200 rounded text-xs" placeholder="Bedenler (Örn: S, M, L)" />
+                              </div>
                             </td>
-                            <td className="py-3 px-4"><input type="number" value={editFormData.price} onChange={e => setEditFormData({...editFormData, price: e.target.value})} className="w-24 px-3 py-2 border rounded-lg font-bold" /></td>
-                            <td className="py-3 px-4">
+                            <td className="py-4 px-4 align-top"><input type="number" value={editFormData.price} onChange={e => setEditFormData({...editFormData, price: e.target.value})} className="w-24 px-3 py-2 border border-blue-200 rounded font-black text-[#db2777] focus:outline-none focus:border-blue-500" /></td>
+                            <td className="py-4 px-4 align-top">
                               <div className="flex flex-col gap-2">
-                                <button onClick={() => handleUpdateProduct(p.id)} className="bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold">Kaydet</button>
-                                <button onClick={() => setEditingId(null)} className="bg-neutral-400 text-white px-4 py-2 rounded-lg text-xs font-bold">İptal</button>
+                                <button onClick={() => handleUpdateProduct(p.id)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded text-xs font-bold transition shadow-sm">KAYDET</button>
+                                <button onClick={() => setEditingId(null)} className="bg-neutral-200 hover:bg-neutral-300 text-neutral-700 px-4 py-2.5 rounded text-xs font-bold transition">İptal</button>
                               </div>
                             </td>
                           </>
                         ) : (
                           <>
-                            <td className="py-4 px-4"><img src={p.image_url} className="w-12 h-12 object-cover rounded border shadow-sm" /></td>
+                            {/* NORMAL LİSTELEME MODU */}
                             <td className="py-4 px-4">
-                              <div className="font-bold text-neutral-800">{p.name}</div>
-                              {p.description && <div className="text-xs text-neutral-500 mt-1 line-clamp-1 max-w-[250px]">{p.description}</div>}
+                              <div className="relative w-16 h-20">
+                                <img src={p.image_url} className="w-full h-full object-cover rounded border border-neutral-200 shadow-sm" />
+                                <span className="absolute -bottom-2 -right-2 bg-neutral-900 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase">{p.category}</span>
+                              </div>
                             </td>
-                            <td className="py-4 px-4 text-[#db2777] font-black">{p.price} TL</td>
+                            <td className="py-4 px-4">
+                              <div className="font-bold text-neutral-900 text-base">{p.name}</div>
+                              <div className="text-xs font-bold text-neutral-400 mt-1 flex items-center gap-2">
+                                <span>Renk: {p.colors || 'Siyah, Beyaz'}</span> <span className="w-1 h-1 bg-neutral-300 rounded-full"></span> <span>Beden: {p.sizes || 'S, M, L'}</span>
+                              </div>
+                              {p.description && <div className="text-[11px] text-neutral-500 mt-2 line-clamp-1 max-w-[300px] italic">"{p.description}"</div>}
+                            </td>
+                            <td className="py-4 px-4 text-[#db2777] font-black text-lg">{p.price} TL</td>
                             <td className="py-4 px-4">
                               <div className="flex gap-2">
-                                <button onClick={() => startEdit(p)} className="text-blue-600 font-bold bg-blue-50 px-3 py-1.5 rounded-lg text-xs">Düzenle</button>
-                                <button onClick={() => handleDelete(p.id)} className="text-red-500 font-bold bg-red-50 px-3 py-1.5 rounded-lg text-xs">Sil</button>
+                                <button onClick={() => startEdit(p)} className="text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded text-xs transition border border-blue-100">Düzenle</button>
+                                <button onClick={() => handleDelete(p.id)} className="text-red-600 font-bold bg-red-50 hover:bg-red-100 px-3 py-2 rounded text-xs transition border border-red-100">Sil</button>
                               </div>
                             </td>
                           </>
@@ -396,17 +476,16 @@ const [formData, setFormData] = useState({
           </div>
         )}
 
-        {/* LOGLAR */}
+        {/* LOGLAR VE SİPARİŞLER (Öncekiyle aynı kaldı) */}
         {activeTab === 'logs' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold mb-6">Sistem Logları</h2>
             <table className="w-full text-left text-sm"><tbody>
-              {logList.map(log => (<tr key={log.id} className="border-b"><td className="py-3">{log.action}</td><td className="py-3">{log.details}</td></tr>))}
+              {logList.map(log => (<tr key={log.id} className="border-b"><td className="py-3 font-bold text-neutral-700">{log.action}</td><td className="py-3 text-neutral-500">{log.details}</td></tr>))}
             </tbody></table>
           </div>
         )}
 
-        {/* SİPARİŞLER */}
         {activeTab === 'orders' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold text-neutral-800 mb-6">Sipariş Yönetimi</h2>
