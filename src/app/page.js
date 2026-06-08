@@ -451,7 +451,52 @@ export default function Home() {
       {/* 2. ONUN ALTINDA ÖN SİPARİŞ VİTRİNİ */}
       <PreOrderHero onAddToCart={addToCart} />
 
-      {/* 2.5 KATEGORİ VİTRİNLERİ (Aşağı Kaydırdıkça Çıkan Bölümler) */}
+      {/* 3. EN ALTTA ÜRÜN LİSTELEME GRİDİ */}
+      <section className="py-16 container mx-auto px-4">
+        <div className="flex justify-between items-end mb-10 border-b border-gray-100 pb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-neutral-900">
+            {activeCategory === 'TÜMÜ' ? 'Sezonun Öne Çıkanları' : `${activeCategory} Koleksiyonu`}
+          </h2>
+          <span className="text-sm font-medium text-neutral-500">{filteredProducts.length} Ürün Listeleniyor</span>
+        </div>
+        
+        {isLoading ? (
+          <div className="py-20 flex flex-col items-center justify-center w-full">
+            <div className="w-10 h-10 border-4 border-pink-100 border-t-pink-600 rounded-full animate-spin mb-4"></div>
+            <p className="text-neutral-400 font-bold tracking-widest text-xs uppercase">Koleksiyon Yükleniyor...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
+            {filteredProducts.map((product) => (
+              <Link href={`/urun/${product.id}`} key={product.id} className="group flex flex-col cursor-pointer">
+                <div className="bg-neutral-100 aspect-[3/4] mb-4 overflow-hidden relative border border-gray-50 flex-shrink-0">
+                  {product.image_url ? (
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-in-out" />
+                  ) : (
+                    <div className="absolute inset-0 bg-neutral-200 group-hover:scale-105 transition duration-700 ease-in-out"></div>
+                  )}
+                  
+                  {product.tag && <div className="absolute top-3 left-3 bg-pink-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm">{product.tag}</div>}
+                  {(product.is_new || product.isNew) && !product.tag && <div className="absolute top-3 left-3 bg-neutral-900 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm">YENİ</div>}
+
+                  <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out">
+                    <span className="block text-center w-full bg-white/90 backdrop-blur-sm text-neutral-900 font-bold py-3 text-sm hover:bg-pink-600 hover:text-white transition shadow-lg">İNCELE VE SEÇ</span>
+                  </div>
+                </div>
+                
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-neutral-700 group-hover:text-pink-600 transition line-clamp-1">{product.name}</h3>
+                  <div className="flex space-x-2 mt-1 items-center">
+                    <p className="text-pink-600 font-bold text-lg">{product.price},00 TL</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+           {/* 2.5 KATEGORİ VİTRİNLERİ (Aşağı Kaydırdıkça Çıkan Bölümler) */}
       {searchQuery === '' && activeCategory === 'TÜMÜ' && (
         <div className="space-y-16 py-10 bg-neutral-50/50">
           
@@ -509,51 +554,6 @@ export default function Home() {
 
         </div>
       )}
-
-      {/* 3. EN ALTTA ÜRÜN LİSTELEME GRİDİ */}
-      <section className="py-16 container mx-auto px-4">
-        <div className="flex justify-between items-end mb-10 border-b border-gray-100 pb-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-neutral-900">
-            {activeCategory === 'TÜMÜ' ? 'Sezonun Öne Çıkanları' : `${activeCategory} Koleksiyonu`}
-          </h2>
-          <span className="text-sm font-medium text-neutral-500">{filteredProducts.length} Ürün Listeleniyor</span>
-        </div>
-        
-        {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center w-full">
-            <div className="w-10 h-10 border-4 border-pink-100 border-t-pink-600 rounded-full animate-spin mb-4"></div>
-            <p className="text-neutral-400 font-bold tracking-widest text-xs uppercase">Koleksiyon Yükleniyor...</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
-            {filteredProducts.map((product) => (
-              <Link href={`/urun/${product.id}`} key={product.id} className="group flex flex-col cursor-pointer">
-                <div className="bg-neutral-100 aspect-[3/4] mb-4 overflow-hidden relative border border-gray-50 flex-shrink-0">
-                  {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-in-out" />
-                  ) : (
-                    <div className="absolute inset-0 bg-neutral-200 group-hover:scale-105 transition duration-700 ease-in-out"></div>
-                  )}
-                  
-                  {product.tag && <div className="absolute top-3 left-3 bg-pink-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm">{product.tag}</div>}
-                  {(product.is_new || product.isNew) && !product.tag && <div className="absolute top-3 left-3 bg-neutral-900 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm">YENİ</div>}
-
-                  <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out">
-                    <span className="block text-center w-full bg-white/90 backdrop-blur-sm text-neutral-900 font-bold py-3 text-sm hover:bg-pink-600 hover:text-white transition shadow-lg">İNCELE VE SEÇ</span>
-                  </div>
-                </div>
-                
-                <div className="flex-1">
-                  <h3 className="text-sm font-medium text-neutral-700 group-hover:text-pink-600 transition line-clamp-1">{product.name}</h3>
-                  <div className="flex space-x-2 mt-1 items-center">
-                    <p className="text-pink-600 font-bold text-lg">{product.price},00 TL</p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
 
 {/* 4. KURUMSAL E-TİCARET FOOTER (YAMAN MEDYA HAKLARIYLA) */}
       <footer className="bg-neutral-900 text-neutral-300 pt-16 pb-8 border-t border-neutral-800 mt-20">
