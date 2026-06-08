@@ -103,11 +103,22 @@ export default function AdminPanel() {
   };
 
   const handleUpdateProduct = async (id) => {
+    // FİYAT DÜZELTME İŞLEMİ
+    let formattedPrice = editFormData.price;
+    if (typeof formattedPrice === 'string') {
+      formattedPrice = formattedPrice.replace(/\./g, '').replace(/,/g, '.');
+    }
+
+    const dataToSubmit = {
+      ...editFormData,
+      price: parseFloat(formattedPrice) // Temizlenmiş fiyat
+    };
+
     try {
       const response = await fetch(`https://tutu-backend-api.onrender.com/api/products/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': adminToken },
-        body: JSON.stringify(editFormData)
+        body: JSON.stringify(dataToSubmit) // editFormData yerine dataToSubmit gönderiyoruz
       });
       const data = await response.json();
       if (data.success) {
