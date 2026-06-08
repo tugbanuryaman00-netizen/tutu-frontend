@@ -137,16 +137,18 @@ export default function UrunDetay() {
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 relative">
       
-     {/* MODERN WHATSAPP BUTONU */}
+{/* WHATSAPP BUTONU - RESİM TABANLI (GERÇEK GÖRÜNÜM) */}
 <a 
   href={`https://wa.me/905331400419?text=${encodeURIComponent("Merhaba, TUTU Giyim koleksiyonu hakkında bilgi almak istiyorum.")}`} 
   target="_blank" 
   rel="noopener noreferrer" 
-  className="fixed bottom-6 right-6 z-[100] flex items-center justify-center w-14 h-14 bg-[#25D366] text-white rounded-full shadow-[0_4px_15px_rgba(37,211,102,0.6)] hover:bg-[#128C7E] transition-all transform hover:scale-110"
+  className="fixed bottom-6 right-6 z-[100] flex items-center justify-center w-14 h-14 bg-transparent rounded-full shadow-[0_4px_15px_rgba(37,211,102,0.4)] hover:scale-110 transition-all duration-300"
 >
-  <svg className="w-8 h-8" viewBox="0 0 24 24" fill="white">
-    <path d="M12.031 6.172c-3.187 0-5.781 2.594-5.781 5.781 0 1.016.266 1.953.734 2.781l-0.781 2.859 2.922-0.766c.797.438 1.703.688 2.656.688 3.187 0 5.781-2.594 5.781-5.781s-2.594-5.781-5.781-5.781zM12.031 16.5c-0.859 0-1.688-0.234-2.406-0.641l-0.172-0.109-1.781 0.469 0.484-1.734-0.109-0.188c-0.469-0.797-0.719-1.719-0.719-2.672 0-2.859 2.328-5.188 5.188-5.188s5.188 2.328 5.188 5.188c0 2.859-2.328 5.188-5.188 5.188zM14.688 12.391c-0.156-0.078-0.922-0.453-1.063-0.5-0.141-0.063-0.234-0.094-0.344 0.078s-0.422 0.516-0.516 0.625c-0.094 0.109-0.188 0.125-0.344 0.047-0.156-0.078-0.656-0.234-1.25-0.766-0.469-0.422-0.781-0.938-0.875-1.094s-0.016-0.234 0.063-0.328c0.063-0.063 0.141-0.172 0.219-0.25s0.109-0.141 0.156-0.234c0.047-0.094 0.023-0.172-0.016-0.234s-0.344-0.828-0.469-1.125c-0.125-0.297-0.25-0.25-0.344-0.25s-0.188-0.016-0.281-0.016c-0.094 0-0.25 0.031-0.375 0.172s-0.484 0.469-0.484 1.141c0 0.672 0.5 1.312 0.563 1.406s0.875 1.344 2.125 1.875c0.297 0.125 0.531 0.203 0.719 0.25s0.313 0.031 0.422-0.031c0.359-0.203 0.359-0.188 0.656-0.688s0.188-0.688 0.141-0.766c-0.047-0.078-0.172-0.125-0.344-0.203z"/>
-  </svg>
+  <img 
+    src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" 
+    alt="WhatsApp" 
+    className="w-full h-full object-cover"
+  />
 </a>
 
       {/* --- GOOGLE GİRİŞ PENCERESİ (MODAL) --- */}
