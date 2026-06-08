@@ -268,7 +268,7 @@ export default function Home() {
                     cart.map((item) => (
                       <div key={item.uniqueId} className="flex justify-between items-start border-b border-gray-100 pb-4">
                         <div className="flex gap-3">
-                          {item.image_url && <img src={item.image_url} alt={item.name} className="w-12 h-16 object-cover bg-neutral-100 rounded" />}
+                          {item.image_url && <img src={item.cartImage || item.image_url} alt={item.name} className="w-12 h-16 object-cover bg-neutral-100 rounded" />}
                           <div>
                             <h4 className="text-sm font-semibold text-neutral-800">{item.name}</h4>
                             <p className="text-xs text-neutral-500 mt-0.5">Renk: {item.selectedColor} | Beden: {item.selectedSize}</p>
