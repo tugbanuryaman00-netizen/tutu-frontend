@@ -538,10 +538,10 @@ export default function Home() {
       {/* 2. ONUN ALTINDA ÖN SİPARİŞ VİTRİNİ */}
       <PreOrderHero onAddToCart={addToCart} />
 
-      {/* 3. EN ALTTA ÜRÜN LİSTELEME GRİDİ */}
+  {/* 3. ANA ÜRÜN LİSTELEME GRİDİ (YENİ GELENLER) */}
       <section className="py-16 container mx-auto px-4">
         <div className="flex justify-between items-end mb-10 border-b border-gray-100 pb-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-neutral-900">
+          <h2 className="text-3xl md:text-4xl font-black text-neutral-900 tracking-tight">
             {activeCategory === 'TÜMÜ' ? 'YENİ GELEN ÜRÜNLERİMİZ' : `${activeCategory} Koleksiyonu`}
           </h2>
           <span className="text-sm font-medium text-neutral-500">{filteredProducts.length} Ürün Listeleniyor</span>
@@ -553,29 +553,25 @@ export default function Home() {
             <p className="text-neutral-400 font-bold tracking-widest text-xs uppercase">Koleksiyon Yükleniyor...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
-            {filteredProducts.map((product) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {filteredProducts.slice(0, 8).map((product) => (
               <Link href={`/urun/${product.id}`} key={product.id} className="group flex flex-col cursor-pointer">
-                <div className="bg-neutral-100 aspect-[3/4] mb-4 overflow-hidden relative border border-gray-50 flex-shrink-0">
+                {/* Görseli biraz daha büyüttük (aspect-[4/5] - daha dikey ve estetik) */}
+                <div className="bg-neutral-100 aspect-[4/5] mb-5 overflow-hidden relative rounded-xl border border-gray-100 flex-shrink-0 shadow-sm">
                   {product.image_url ? (
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700 ease-in-out" />
                   ) : (
-                    <div className="absolute inset-0 bg-neutral-200 group-hover:scale-105 transition duration-700 ease-in-out"></div>
+                    <div className="absolute inset-0 bg-neutral-200"></div>
                   )}
-                  
-                  {product.tag && <div className="absolute top-3 left-3 bg-pink-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm">{product.tag}</div>}
-                  {(product.is_new || product.isNew) && !product.tag && <div className="absolute top-3 left-3 bg-neutral-900 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-sm">YENİ</div>}
-
+                  {product.tag && <div className="absolute top-4 left-4 bg-pink-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider shadow-md">{product.tag}</div>}
                   <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out">
-                    <span className="block text-center w-full bg-white/90 backdrop-blur-sm text-neutral-900 font-bold py-3 text-sm hover:bg-pink-600 hover:text-white transition shadow-lg">İNCELE VE SEÇ</span>
+                    <span className="block text-center w-full bg-white/95 backdrop-blur-sm text-neutral-900 font-black py-3.5 text-xs hover:bg-pink-600 hover:text-white transition shadow-lg">İNCELE VE SEÇ</span>
                   </div>
                 </div>
                 
-                <div className="flex-1">
-                  <h3 className="text-sm font-medium text-neutral-700 group-hover:text-pink-600 transition line-clamp-1">{product.name}</h3>
-                  <div className="flex space-x-2 mt-1 items-center">
-                    <p className="text-pink-600 font-bold text-lg">{product.price},00 TL</p>
-                  </div>
+                <div className="flex-1 px-1">
+                  <h3 className="text-base font-semibold text-neutral-800 group-hover:text-pink-600 transition truncate">{product.name}</h3>
+                  <p className="text-pink-600 font-black text-lg mt-1">{product.price},00 TL</p>
                 </div>
               </Link>
             ))}
@@ -583,34 +579,24 @@ export default function Home() {
         )}
       </section>
 
-{/* 2.5 KATEGORİ VİTRİNLERİ (Aşağı Kaydırdıkça Çıkan Bölümler) */}
+      {/* 2.5 KATEGORİ VİTRİNLERİ (Yatay Kaydırmalı Raflar) */}
       {searchQuery === '' && activeCategory === 'TÜMÜ' && (
-        <div className="space-y-16 py-10 bg-neutral-50/50">
+        <div className="space-y-20 py-10 bg-neutral-50/50">
 
-           {/* 0. SEZON BÖLÜMÜ */}
+          {/* SEZONUN ÖNE ÇIKANLARI (Biraz daha vurgulu - Hero gibi) */}
           <section className="container mx-auto px-4">
-            <div className="flex justify-between items-end mb-6 border-b border-neutral-200 pb-2">
-              <div>
-                <h2 className="text-2xl font-black text-neutral-900 tracking-tight">SEZONUN ÖNE ÇIKANLARI</h2>
-                <p className="text-xs text-neutral-500 font-medium mt-1">Sizin için hazırladığımız sezonun öne çıkan ürünleri</p>
-              </div>
-              <button onClick={() => setActiveCategory('SEZON')} className="text-xs font-bold text-[#db2777] hover:underline uppercase tracking-wider">Tümünü Gör</button>
-            </div>
-            <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
-              {products.filter(p => p.category === 'SEZON').slice(0, 8).map(product => (
-                <Link href={`/urun/${product.id}`} key={product.id} className="min-w-[200px] max-w-[200px] snap-start group cursor-pointer">
-                  <div className="bg-neutral-100 aspect-[3/4] mb-3 overflow-hidden relative rounded-lg">
+             <h2 className="text-3xl font-black text-neutral-900 mb-8 border-l-4 border-pink-600 pl-4">SEZONUN ÖNE ÇIKANLARI</h2>
+             <div className="flex overflow-x-auto gap-6 pb-6 snap-x hide-scrollbar">
+              {products.filter(p => p.category === 'SEZON').slice(0, 6).map(product => (
+                <Link href={`/urun/${product.id}`} key={product.id} className="min-w-[240px] max-w-[240px] snap-start group cursor-pointer">
+                  <div className="bg-neutral-100 aspect-[3/4] mb-4 overflow-hidden relative rounded-2xl shadow-lg">
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
-                    {/* Kombinlere özel siyah etiket */}
-                    <div className="absolute top-2 left-2 bg-neutral-900 text-white text-[9px] font-black px-2 py-0.5 rounded uppercase">TREND ÜRÜNLER</div>
+                    <div className="absolute top-3 left-3 bg-neutral-900 text-white text-[10px] font-black px-3 py-1 rounded uppercase">TREND</div>
                   </div>
-                  <h3 className="text-xs font-semibold text-neutral-700 line-clamp-1 group-hover:text-[#db2777]">{product.name}</h3>
-                  <p className="text-neutral-900 font-black text-sm mt-0.5">{product.price},00 TL</p>
+                  <h3 className="text-sm font-bold text-neutral-800 line-clamp-1">{product.name}</h3>
+                  <p className="text-[#db2777] font-black text-base mt-1">{product.price},00 TL</p>
                 </Link>
               ))}
-              {products.filter(p => p.category === 'SEZON').length === 0 && (
-                [1,2,3,4].map(i => <div key={i} className="min-w-[200px] aspect-[3/4] bg-neutral-100 rounded-lg animate-pulse flex items-center justify-center text-xs text-neutral-400 font-bold">Yakında</div>)
-              )}
             </div>
           </section>
           
