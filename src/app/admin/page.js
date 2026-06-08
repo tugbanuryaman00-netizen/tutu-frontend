@@ -9,7 +9,10 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('add');
   
   // SEO İÇİN EKLENDİ: description alanı formData içine dahil edildi
-  const [formData, setFormData] = useState({ name: '', price: '', category: 'GİYİM', tag: '', is_new: false, image_url: '', stock: '', description: '' });
+  // useState içindeki formData başlangıcını şu şekilde güncelle:
+const [formData, setFormData] = useState({ 
+  name: '', price: '', category: 'GİYİM', tag: '', is_new: false, image_url: '', stock: '', description: '' 
+});
   const [status, setStatus] = useState({ type: '', message: '' });
   const [productList, setProductList] = useState([]);
   const [logList, setLogList] = useState([]);
@@ -307,9 +310,19 @@ export default function AdminPanel() {
               </div>
               
               <div className="grid grid-cols-2 gap-4">
-                <select name="category" value={formData.category} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]">
-                  <option value="GİYİM">GİYİM</option><option value="ÇANTA">ÇANTA</option><option value="AKSESUAR">AKSESUAR</option>
-                </select>
+                // Yeni Kategori Listesi
+<select 
+  name="category" 
+  value={formData.category} 
+  onChange={handleChange} 
+  className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]"
+>
+  <option value="GİYİM">ÜST GİYİM</option>
+  <option value="ALT GİYİM">ALT GİYİM</option>
+  <option value="KOMBİN">KOMBİN</option>
+  <option value="ÇANTA">ÇANTA</option>
+  <option value="AKSESUAR">AKSESUAR</option>
+</select>
                 <input type="text" name="tag" value={formData.tag} onChange={handleChange} className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]" placeholder="Etiket (Örn: ÇOK SATAN)" />
               </div>
 
