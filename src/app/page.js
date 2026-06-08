@@ -149,43 +149,52 @@ export default function Home() {
   };
 
   // İŞTE BÜTÜN HATALARI ÇÖZEN YENİ VE GÜVENLİ SİPARİŞ MOTORU
-// SİPARİŞ MOTORU VE NOKTALI FİYAT HESAPLAMA MANTIĞI
+  const submitOrder = async (e) => {
+    e.preventDefault();
+    
+    // Güvenlik: Adres eksikse durdur
+    if (!checkoutForm.city || !checkoutForm.address) {
+      alert("Lütfen adres bilgilerinizi eksiksiz doldurun.");
+      return;
+    }
+
+    const fullShippingAddress = `${checkoutForm.city} / ${checkoutForm.district} / ${checkoutForm.neighborhood} Mah. - Açık Adres: ${checkoutForm.address}`;
+
+    try {
+      const response = await fetch('https://tutu-backend-api.onrender.com/api/payment/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          customer_name: checkoutForm.name, 
+          phone: checkoutForm.phone,       
+          address: fullShippingAddress,    
+          total_amount: Number(cartTotal), 
+          items: cart,
+          user_id: user ? user.id : null
+        })
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        alert("Siparişiniz başarıyla alındı! Siparişlerim panelinden kargo sürecini takip edebilirsiniz.");
+        localStorage.removeItem('tutu_cart'); // Sipariş verilince hafızayı sıfırla
+        setCart([]); 
+        setIsCartOpen(false);
+        setIsCheckoutMode(false);
+        setCheckoutForm({ name: '', phone: '', city: '', district: '', neighborhood: '', address: '', saveAddress: false });
+      } else {
+        alert("Sipariş oluşturulamadı: " + data.message);
+      }
+    } catch (error) {
+      alert("Bağlantı hatası yaşandı, lütfen internetinizi kontrol edip tekrar deneyin.");
+    }
+  };
+
   const removeFromCart = (uniqueId) => {
     setCart(cart.filter((item) => item.uniqueId !== uniqueId));
   };
 
-  // Sepetteki noktalı fiyatları (Örn: 3.999) düzgün toplamak için noktayı temizler
-  const rawTotal = cart.reduce((total, item) => {
-    const cleanPrice = item.price ? item.price.toString().replace(/\./g, '').replace(',', '.') : '0';
-    return total + Number(cleanPrice);
-  }, 0);
-  
-  // Ekranda göstermek için tekrar noktalı ve şık formata çevirir
-  const cartTotal = rawTotal.toLocaleString('tr-TR'); 
-
-  const submitOrder = async (e) => {
-    e.preventDefault();
-    if (!checkoutForm.city || !checkoutForm.address) { alert("Lütfen adres bilgilerinizi eksiksiz doldurun."); return; }
-    const fullShippingAddress = `${checkoutForm.city} / ${checkoutForm.district} / ${checkoutForm.neighborhood} Mah. - Açık Adres: ${checkoutForm.address}`;
-    try {
-      const response = await fetch('https://tutu-backend-api.onrender.com/api/payment/checkout', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        // Veritabanına gönderirken temiz rakam (rawTotal) gönderiyoruz
-        body: JSON.stringify({ customer_name: checkoutForm.name, phone: checkoutForm.phone, address: fullShippingAddress, total_amount: rawTotal, items: cart, user_id: user ? user.id : null })
-      });
-      const data = await response.json();
-      if (data.success) { 
-        alert("Siparişiniz başarıyla alındı!"); 
-        localStorage.removeItem('tutu_cart'); 
-        setCart([]); 
-        setIsCartOpen(false); 
-        setIsCheckoutMode(false); 
-        setCheckoutForm({ name: '', phone: '', city: '', district: '', neighborhood: '', address: '', saveAddress: false }); 
-      } else {
-        alert("Sipariş oluşturulamadı: " + data.message);
-      }
-    } catch (error) { alert("Bağlantı hatası yaşandı."); }
-  };
+  const cartTotal = cart.reduce((total, item) => total + Number(item.price || 0), 0);
 
   // Kategoriye ve Arama Kelimesine Göre Filtreleme Motoru
   const filteredProducts = products.filter(p => {

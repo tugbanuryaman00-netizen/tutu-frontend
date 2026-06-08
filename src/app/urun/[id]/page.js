@@ -99,15 +99,7 @@ export default function UrunDetay() {
     setCart(cart.filter((item) => item.uniqueId !== uniqueId));
   };
 
-  // SİPARİŞ MOTORU VE NOKTALI FİYAT HESAPLAMA MANTIĞI
-  // Sepetteki noktalı fiyatları (Örn: 3.999) düzgün toplamak için noktayı temizler
-  const rawTotal = cart.reduce((total, item) => {
-    const cleanPrice = item.price ? item.price.toString().replace(/\./g, '').replace(',', '.') : '0';
-    return total + Number(cleanPrice);
-  }, 0);
-  
-  // Ekranda göstermek için tekrar noktalı ve şık formata çevirir
-  const cartTotal = rawTotal.toLocaleString('tr-TR'); 
+  const cartTotal = cart.reduce((total, item) => total + Number(item.price || 0), 0);
 
   const submitOrder = async (e) => {
     e.preventDefault();
@@ -116,20 +108,15 @@ export default function UrunDetay() {
     try {
       const response = await fetch('https://tutu-backend-api.onrender.com/api/payment/checkout', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        // Veritabanına gönderirken temiz rakam (rawTotal) gönderiyoruz
-        body: JSON.stringify({ customer_name: checkoutForm.name, phone: checkoutForm.phone, address: fullShippingAddress, total_amount: rawTotal, items: cart, user_id: user ? user.id : null })
+        body: JSON.stringify({ customer_name: checkoutForm.name, phone: checkoutForm.phone, address: fullShippingAddress, total_amount: Number(cartTotal), items: cart, user_id: user ? user.id : null })
       });
       const data = await response.json();
-      if (data.success) { 
-        alert("Siparişiniz başarıyla alındı!"); 
-        localStorage.removeItem('tutu_cart'); 
-        setCart([]); 
-        setIsCartOpen(false); 
-        setIsCheckoutMode(false); 
-        setCheckoutForm({ name: '', phone: '', city: '', district: '', neighborhood: '', address: '', saveAddress: false }); 
-      } else {
-        alert("Sipariş oluşturulamadı: " + data.message);
-      }
+      if (data.success) {
+        alert("Siparişiniz başarıyla alındı!");
+        localStorage.removeItem('tutu_cart');
+        setCart([]); setIsCartOpen(false); setIsCheckoutMode(false);
+        setCheckoutForm({ name: '', phone: '', city: '', district: '', neighborhood: '', address: '', saveAddress: false });
+      } else alert("Sipariş oluşturulamadı: " + data.message);
     } catch (error) { alert("Bağlantı hatası yaşandı."); }
   };
 
