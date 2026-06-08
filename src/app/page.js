@@ -69,6 +69,7 @@ export default function Home() {
   const [checkoutForm, setCheckoutForm] = useState({ 
     name: '', phone: '', city: '', district: '', neighborhood: '', address: '', saveAddress: false 
   });
+  const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true); 
@@ -198,9 +199,20 @@ export default function Home() {
   // İŞTE İKİNCİ ÇÖZÜM: Fiyat metne dönüşmüşse bile onu zorla Sayıya (Number) çeviriyor
   const cartTotal = cart.reduce((total, item) => total + Number(item.price || 0), 0);
 
-  const filteredProducts = activeCategory === 'TÜMÜ' 
-    ? products 
-    : products.filter(p => p.category === activeCategory);
+  // Kategoriye ve Arama Kelimesine Göre Filtreleme Motoru
+  const filteredProducts = products.filter(p => {
+    // 1. Kategori filtresi
+    const matchesCategory = activeCategory === 'TÜMÜ' || p.category === activeCategory;
+    // 2. Arama filtresi (İsim, açıklama veya etikette arar)
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch = 
+      p.name?.toLowerCase().includes(searchLower) || 
+      p.description?.toLowerCase().includes(searchLower) ||
+      p.tag?.toLowerCase().includes(searchLower) ||
+      p.category?.toLowerCase().includes(searchLower);
+      
+    return matchesCategory && matchesSearch;
+  });
 
   return (
     <div className="min-h-screen bg-white font-sans text-neutral-900 relative">
@@ -372,6 +384,25 @@ export default function Home() {
             ))}
           </nav>
 
+          {/* MODERN SEARCHBAR */}
+          <div className="hidden lg:flex items-center relative w-64 ml-4">
+            <input 
+              type="text" 
+              placeholder="Ürün, kategori veya etiket ara..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-neutral-100 text-sm px-4 py-2.5 rounded-full pl-10 border border-transparent focus:bg-white focus:border-[#db2777] focus:outline-none transition-all shadow-inner placeholder-neutral-400 font-medium"
+            />
+            <svg className="w-4 h-4 text-neutral-400 absolute left-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            
+            {/* Arama kelimesi varsa silme çarpısı */}
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-4 text-neutral-400 hover:text-neutral-700">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            )}
+          </div>
+
           {/* MODERN İKONLAR (GİRİŞ/HESABIM VE SEPET) */}
           <div className="flex items-center gap-6">
             
@@ -419,6 +450,65 @@ export default function Home() {
 
       {/* 2. ONUN ALTINDA ÖN SİPARİŞ VİTRİNİ */}
       <PreOrderHero onAddToCart={addToCart} />
+
+      {/* 2.5 KATEGORİ VİTRİNLERİ (Aşağı Kaydırdıkça Çıkan Bölümler) */}
+      {searchQuery === '' && activeCategory === 'TÜMÜ' && (
+        <div className="space-y-16 py-10 bg-neutral-50/50">
+          
+          {/* ÜST GİYİM BÖLÜMÜ (Şimdilik GİYİM kategorisindeki ürünleri çeker, ileride admin panelden ÜST GİYİM seçeneği ekleyince otomatik oradan çeker) */}
+          <section className="container mx-auto px-4">
+            <div className="flex justify-between items-end mb-6 border-b border-neutral-200 pb-2">
+              <div>
+                <h2 className="text-2xl font-black text-neutral-900 tracking-tight">ÜST GİYİM</h2>
+                <p className="text-xs text-neutral-500 font-medium mt-1">Gömlek, Bluz, Kazak ve Daha Fazlası</p>
+              </div>
+              <button onClick={() => setActiveCategory('GİYİM')} className="text-xs font-bold text-[#db2777] hover:underline uppercase tracking-wider">Tümünü Gör</button>
+            </div>
+            <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
+              {products.filter(p => p.category === 'GİYİM').slice(0, 5).map(product => (
+                <Link href={`/urun/${product.id}`} key={product.id} className="min-w-[200px] max-w-[200px] snap-start group cursor-pointer">
+                  <div className="bg-neutral-100 aspect-[3/4] mb-3 overflow-hidden relative rounded-lg">
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+                    {product.tag && <div className="absolute top-2 left-2 bg-[#db2777] text-white text-[9px] font-black px-2 py-0.5 rounded uppercase">{product.tag}</div>}
+                  </div>
+                  <h3 className="text-xs font-semibold text-neutral-700 line-clamp-1 group-hover:text-[#db2777]">{product.name}</h3>
+                  <p className="text-[#db2777] font-black text-sm mt-0.5">{product.price},00 TL</p>
+                </Link>
+              ))}
+              {/* Eğer hiç ürün yoksa boş kutular göster */}
+              {products.filter(p => p.category === 'GİYİM').length === 0 && (
+                [1,2,3,4].map(i => <div key={i} className="min-w-[200px] aspect-[3/4] bg-neutral-100 rounded-lg animate-pulse flex items-center justify-center text-xs text-neutral-400 font-bold">Yakında</div>)
+              )}
+            </div>
+          </section>
+
+          {/* ÇANTA BÖLÜMÜ */}
+          <section className="container mx-auto px-4">
+            <div className="flex justify-between items-end mb-6 border-b border-neutral-200 pb-2">
+              <div>
+                <h2 className="text-2xl font-black text-neutral-900 tracking-tight">ÇANTA KOLEKSİYONU</h2>
+                <p className="text-xs text-neutral-500 font-medium mt-1">Tarzını tamamlayan ikonik tasarımlar</p>
+              </div>
+              <button onClick={() => setActiveCategory('ÇANTA')} className="text-xs font-bold text-[#db2777] hover:underline uppercase tracking-wider">Tümünü Gör</button>
+            </div>
+            <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
+              {products.filter(p => p.category === 'ÇANTA').slice(0, 5).map(product => (
+                <Link href={`/urun/${product.id}`} key={product.id} className="min-w-[200px] max-w-[200px] snap-start group cursor-pointer">
+                  <div className="bg-neutral-100 aspect-[3/4] mb-3 overflow-hidden relative rounded-lg">
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+                  </div>
+                  <h3 className="text-xs font-semibold text-neutral-700 line-clamp-1 group-hover:text-[#db2777]">{product.name}</h3>
+                  <p className="text-neutral-900 font-black text-sm mt-0.5">{product.price},00 TL</p>
+                </Link>
+              ))}
+               {products.filter(p => p.category === 'ÇANTA').length === 0 && (
+                [1,2,3,4].map(i => <div key={i} className="min-w-[200px] aspect-[3/4] bg-neutral-100 rounded-lg animate-pulse flex items-center justify-center text-xs text-neutral-400 font-bold">Yakında</div>)
+              )}
+            </div>
+          </section>
+
+        </div>
+      )}
 
       {/* 3. EN ALTTA ÜRÜN LİSTELEME GRİDİ */}
       <section className="py-16 container mx-auto px-4">
