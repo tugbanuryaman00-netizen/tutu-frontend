@@ -318,6 +318,7 @@ const [formData, setFormData] = useState({
   className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777]"
 >
   <option value="GİYİM">ÜST GİYİM</option>
+  <option value="SEZON">SEZONUN ÖNE ÇIKANLARI</option>
   <option value="ALT GİYİM">ALT GİYİM</option>
   <option value="KOMBİN">KOMBİN</option>
   <option value="ÇANTA">ÇANTA</option>
