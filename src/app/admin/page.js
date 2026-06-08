@@ -182,7 +182,7 @@ export default function AdminPanel() {
     else setFormData({ ...formData, gallery_images: newGallery });
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.image_url) {
       setStatus({ type: 'error', message: 'Lütfen önce Ana Ürün Fotoğrafını yükleyin!' });
@@ -191,8 +191,15 @@ export default function AdminPanel() {
 
     setStatus({ type: 'loading', message: 'Ekleniyor...' });
     
+    // FİYAT DÜZELTME İŞLEMİ: Noktaları sil (binlik), virgülü noktaya çevir (ondalık)
+    let formattedPrice = formData.price;
+    if (typeof formattedPrice === 'string') {
+      formattedPrice = formattedPrice.replace(/\./g, '').replace(/,/g, '.');
+    }
+
     const dataToSubmit = {
       ...formData,
+      price: parseFloat(formattedPrice), // Temizlenmiş fiyatı sayıya çevirerek gönder
       gallery_images: JSON.stringify(formData.gallery_images) 
     };
 
