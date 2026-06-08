@@ -55,8 +55,14 @@ export default function UrunDetay() {
           setProduct(foundProduct);
           if(foundProduct) {
             setActiveImage(foundProduct.image_url);
-            if(foundProduct.category.includes('GİYİM') || foundProduct.category === 'KOMBİN') setMainSize('S');
-            else setMainSize('Standart Beden');
+            
+            // Dinamik Beden Ayarı (Varsayılan olarak ilk bedeni seçer)
+            const sizesArr = foundProduct.sizes ? foundProduct.sizes.split(',').map(s => s.trim()) : ['Standart Beden'];
+            setMainSize(sizesArr[0]);
+            
+            // Dinamik Renk Ayarı (Varsayılan olarak ilk rengi seçer)
+            const colorsArr = foundProduct.colors ? foundProduct.colors.split(',').map(c => c.trim()) : ['Standart Renk'];
+            setMainColor(colorsArr[0]);
           }
         }
       } catch (error) { console.error("Ürün bulunamadı:", error); } 
@@ -124,7 +130,10 @@ export default function UrunDetay() {
   const galleryImages = product.gallery_images ? JSON.parse(product.gallery_images) : [product.image_url, product.image_url, product.image_url];
 
   const randomProducts = allProducts.filter(p => p.id.toString() !== id.toString()).sort(() => 0.5 - Math.random()).slice(0, 6);
-  
+  // Admin panelden gelen renk ve bedenleri (,) virgül ile parçalayarak diziye çeviriyoruz
+  const availableSizes = product.sizes ? product.sizes.split(',').map(s => s.trim()) : ['Standart Beden'];
+  const availableColors = product.colors ? product.colors.split(',').map(c => c.trim()) : ['Standart Renk'];
+
   // Arama Filtresi (Header için)
   const searchLower = searchQuery.toLowerCase();
   const filteredProducts = allProducts.filter(p => 
@@ -315,6 +324,12 @@ export default function UrunDetay() {
               ))}
             </div>
             <div className="bg-neutral-50 flex-1 aspect-[3/4] overflow-hidden rounded-xl border border-neutral-100 shadow-sm relative group">
+              {/* Etiket (Tag) Yansıtması */}
+              {product.tag && (
+                <span className="absolute top-4 left-4 z-10 bg-[#db2777] text-white text-[10px] font-black px-3 py-1.5 rounded-sm uppercase tracking-widest shadow-md">
+                  {product.tag}
+                </span>
+              )}
               <img src={activeImage} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
             </div>
           </div>
@@ -329,21 +344,27 @@ export default function UrunDetay() {
               <div>
                 <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-3">Renk: <span className="text-neutral-400">{mainColor}</span></h4>
                 <div className="flex gap-2.5 flex-wrap">
-                  {['Siyah', 'Beyaz', 'Ekru', 'Pudra Pink'].map(c => (
-                    <button key={c} onClick={() => setMainColor(c)} className={`px-5 py-2.5 text-xs font-bold border rounded-md transition-all ${mainColor === c ? 'border-[#db2777] text-[#db2777] bg-pink-50 shadow-sm' : 'border-neutral-200 text-neutral-600 hover:border-neutral-400'}`}>{c}</button>
+                  {availableColors.map(c => (
+                    <button key={c} onClick={() => setMainColor(c)} className={`px-5 py-2.5 text-xs font-bold border rounded-md transition-all ${mainColor === c ? 'border-[#db2777] text-[#db2777] bg-pink-50 shadow-sm' : 'border-neutral-200 text-neutral-600 hover:border-neutral-400'}`}>
+                      {c}
+                    </button>
                   ))}
                 </div>
               </div>
 
               <div>
                 <h4 className="text-xs font-bold text-neutral-900 uppercase tracking-wider mb-3">Beden Seçimi</h4>
-                {product.category.includes('GİYİM') || product.category === 'KOMBİN' ? (
-                  <div className="flex gap-3">
-                    {['XS', 'S', 'M', 'L', 'XL'].map(s => (
-                      <button key={s} onClick={() => setMainSize(s)} className={`w-12 h-12 text-xs font-black border transition-all rounded-full flex items-center justify-center ${mainSize === s ? 'border-neutral-900 bg-neutral-900 text-white shadow-md transform scale-110' : 'border-neutral-200 text-neutral-600 hover:border-neutral-400'}`}>{s}</button>
-                    ))}
-                  </div>
-                ) : <span className="inline-block px-5 py-2.5 bg-neutral-100 text-neutral-500 text-xs font-bold rounded-md border w-full text-center">Standart Beden</span>}
+                <div className="flex gap-3 flex-wrap">
+                  {availableSizes.map(s => (
+                    <button 
+                      key={s} 
+                      onClick={() => setMainSize(s)} 
+                      className={`h-12 px-4 min-w-[3rem] text-xs font-black border transition-all rounded-full flex items-center justify-center ${mainSize === s ? 'border-neutral-900 bg-neutral-900 text-white shadow-md transform scale-105' : 'border-neutral-200 text-neutral-600 hover:border-neutral-400'}`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
               
               <button onClick={handleAddToCart} className="w-full bg-neutral-900 text-white px-12 py-5 font-bold tracking-widest text-sm rounded-lg hover:bg-[#db2777] shadow-xl transition-all transform hover:-translate-y-1">SEPETE EKLE</button>
