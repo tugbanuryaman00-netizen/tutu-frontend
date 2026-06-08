@@ -8,7 +8,6 @@ export default function AdminPanel() {
   
   const [activeTab, setActiveTab] = useState('add');
   
-  // YENİ EKLENENLER: formData içine SEO (description), Galeri Resimleri ve Dinamik Renk/Beden eklendi.
   const [formData, setFormData] = useState({ 
     name: '', 
     price: '', 
@@ -16,11 +15,11 @@ export default function AdminPanel() {
     tag: '', 
     is_new: false, 
     image_url: '', 
-    gallery_images: [], // Çoklu resimler için dizi
+    gallery_images: [], 
     stock: '', 
     description: '',
-    colors: 'Siyah, Beyaz', // Varsayılan renkler
-    sizes: 'S, M, L' // Varsayılan bedenler
+    colors: 'Siyah, Beyaz', 
+    sizes: 'S, M, L'
   });
   
   const [status, setStatus] = useState({ type: '', message: '' });
@@ -146,7 +145,6 @@ export default function AdminPanel() {
     } catch (error) {}
   };
 
-  // 1 NUMARALI GÜNCELLEME: ÇOKLU RESİM YÜKLEME MOTORU (Cloudinary)
   const handleImageUpload = async (e, type) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -163,10 +161,8 @@ export default function AdminPanel() {
 
       if (data.secure_url) {
         if (type === 'main') {
-          // Ana resim ve galerinin ilk resmi
           setFormData({ ...formData, image_url: data.secure_url, gallery_images: [data.secure_url, ...formData.gallery_images.slice(1)] });
         } else {
-          // Ekstra resimleri galeriye ekleme
           const newGallery = [...formData.gallery_images];
           newGallery.push(data.secure_url);
           setFormData({ ...formData, gallery_images: newGallery });
@@ -180,10 +176,8 @@ export default function AdminPanel() {
     }
   };
 
-  // Eklenen resmi galeriden silme fonksiyonu
   const removeGalleryImage = (indexToRemove) => {
     const newGallery = formData.gallery_images.filter((_, index) => index !== indexToRemove);
-    // Eğer silinen ana resimse, image_url'yi de temizle
     if (indexToRemove === 0) setFormData({ ...formData, image_url: newGallery[0] || '', gallery_images: newGallery });
     else setFormData({ ...formData, gallery_images: newGallery });
   };
@@ -197,7 +191,6 @@ export default function AdminPanel() {
 
     setStatus({ type: 'loading', message: 'Ekleniyor...' });
     
-    // Gönderilmeden önce gallery_images array'ini JSON string'e çevirmemiz lazım (Veritabanı için)
     const dataToSubmit = {
       ...formData,
       gallery_images: JSON.stringify(formData.gallery_images) 
@@ -213,14 +206,11 @@ export default function AdminPanel() {
       if (data.success) {
         setStatus({ type: 'success', message: 'Ürün Başarıyla Eklendi!' });
         
-        // Formu tertemiz sıfırla
         setFormData({ 
           name: '', price: '', category: 'ÜST GİYİM', tag: '', is_new: false, 
           image_url: '', gallery_images: [], stock: '', description: '', colors: 'Siyah, Beyaz', sizes: 'S, M, L' 
         });
         
-        // Inputları temizle
-       // Inputları temizle
         if(document.getElementById('mainImageUpload')) document.getElementById('mainImageUpload').value = '';
         if(document.getElementById('extraImageUpload1')) document.getElementById('extraImageUpload1').value = '';
         if(document.getElementById('extraImageUpload2')) document.getElementById('extraImageUpload2').value = '';
@@ -241,7 +231,7 @@ export default function AdminPanel() {
       name: product.name, 
       price: product.price, 
       description: product.description || '',
-      colors: product.colors || '', // Eğer db'de colors yoksa boş gelsin
+      colors: product.colors || '', 
       sizes: product.sizes || ''
     });
   };
@@ -276,7 +266,6 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col md:flex-row">
-      {/* SOL MENÜ AYNEN KORUNDU */}
       <div className="w-full md:w-64 md:min-h-screen bg-neutral-900 text-white flex flex-col shrink-0">
         <div className="p-6 border-b border-neutral-800"><h1 className="text-2xl font-extrabold tracking-tighter">TUTU<span className="text-[#db2777]">✮⋆</span></h1></div>
         <nav className="flex-1 p-4 space-y-2">
@@ -290,17 +279,12 @@ export default function AdminPanel() {
 
       <div className="flex-1 p-4 md:p-10 overflow-y-auto">
         
-        {/* ==================================================== */}
-        {/* YENİ ÜRÜN EKLEME (TAMAMEN GELİŞTİRİLMİŞ VERSİYON) */}
-        {/* ==================================================== */}
         {activeTab === 'add' && (
           <div className="max-w-3xl bg-white p-6 md:p-10 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold mb-6 text-neutral-800 border-b pb-4">Detaylı Yeni Ürün Ekle</h2>
             {status.message && <p className={`mb-6 p-4 rounded-lg text-sm font-bold ${status.type === 'success' ? 'bg-green-50 text-green-700' : status.type === 'error' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>{status.message}</p>}
             
             <form onSubmit={handleSubmit} className="space-y-6">
-              
-              {/* 1. Ürün Adı ve Fiyat */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Ürün Adı *</label>
@@ -308,17 +292,18 @@ export default function AdminPanel() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Fiyat (TL) *</label>
-                  <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777] bg-neutral-50 font-bold text-[#db2777]" placeholder="Örn: 850" />
+                  <div className="relative">
+                    <span className="absolute left-4 top-3.5 text-neutral-400 font-black">₺</span>
+                    <input type="text" name="price" value={formData.price} onChange={handleChange} required className="w-full pl-9 pr-4 py-3 border rounded-lg focus:outline-none focus:border-[#db2777] bg-neutral-50 font-black text-[#db2777]" placeholder="Örn: 3.999" />
+                  </div>
                 </div>
               </div>
               
-              {/* 2. SEO Açıklaması */}
               <div>
                 <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Ürün Açıklaması (SEO) *</label>
                 <textarea name="description" value={formData.description} onChange={handleChange} required className="w-full px-4 py-3 border rounded-lg h-24 resize-none focus:outline-none focus:border-[#db2777] bg-neutral-50" placeholder="Google'da öne çıkması için kumaş, renk, kesim ve kullanım detaylarını yazın..." />
               </div>
 
-              {/* 3. Dinamik Renk ve Beden Girişi */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-neutral-50 p-4 rounded-xl border border-neutral-100">
                 <div>
                   <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Mevcut Renkler (Virgülle Ayırın)</label>
@@ -331,7 +316,6 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* 4. Kategori, Etiket, Stok */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Vitrin (Kategori) *</label>
@@ -354,41 +338,31 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* 5. ÇOKLU GALERİ RESMİ YÜKLEME ALANI */}
               <div className="border-2 border-dashed border-neutral-300 rounded-xl p-6 bg-white">
                 <h3 className="text-sm font-bold text-neutral-800 mb-4 flex items-center gap-2">
                   <svg className="w-5 h-5 text-[#db2777]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                   Ürün Görselleri (Sırayla Yükleyin)
                 </h3>
                 
-                {/* 4 LÜ YÜKLEME KUTULARI GRİDİ */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Ana Resim */}
                   <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100 flex flex-col justify-center">
                     <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">1. Ana Görsel *</label>
                     <input type="file" id="mainImageUpload" accept="image/*" onChange={(e) => handleImageUpload(e, 'main')} className="w-full text-xs text-neutral-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-pink-100 file:text-pink-700 cursor-pointer" />
                   </div>
-                  
-                  {/* Ekstra 1 */}
                   <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100 flex flex-col justify-center">
                     <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">2. Detay / Yan</label>
                     <input type="file" id="extraImageUpload1" accept="image/*" disabled={!formData.image_url} onChange={(e) => handleImageUpload(e, 'extra')} className="w-full text-xs text-neutral-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-neutral-200 file:text-neutral-700 cursor-pointer disabled:opacity-50" />
                   </div>
-
-                  {/* Ekstra 2 */}
                   <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100 flex flex-col justify-center">
                     <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">3. Arka / Uzak</label>
                     <input type="file" id="extraImageUpload2" accept="image/*" disabled={!formData.image_url} onChange={(e) => handleImageUpload(e, 'extra')} className="w-full text-xs text-neutral-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-neutral-200 file:text-neutral-700 cursor-pointer disabled:opacity-50" />
                   </div>
-
-                  {/* Ekstra 3 */}
                   <div className="bg-neutral-50 p-3 rounded-lg border border-neutral-100 flex flex-col justify-center">
                     <label className="block text-[10px] font-black text-neutral-500 uppercase tracking-widest mb-2">4. Yakın Çekim</label>
                     <input type="file" id="extraImageUpload3" accept="image/*" disabled={!formData.image_url} onChange={(e) => handleImageUpload(e, 'extra')} className="w-full text-xs text-neutral-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-neutral-200 file:text-neutral-700 cursor-pointer disabled:opacity-50" />
                   </div>
                 </div>
 
-                {/* Yüklenen Resimlerin Önizlemesi */}
                 {formData.gallery_images.length > 0 && (
                   <div className="mt-6 border-t border-neutral-100 pt-4">
                     <p className="text-xs font-bold text-neutral-400 mb-3">Yüklenen Galeri ({formData.gallery_images.length} Resim)</p>
@@ -414,9 +388,6 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* ==================================================== */}
-        {/* ÜRÜN LİSTESİ VE DÜZENLEME (EDİT) KISMI */}
-        {/* ==================================================== */}
         {activeTab === 'list' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold mb-6 border-b pb-4">Mevcut Ürünleriniz</h2>
@@ -440,7 +411,6 @@ export default function AdminPanel() {
                       <tr key={p.id || idx} className="border-b border-neutral-100 hover:bg-neutral-50 transition">
                         {editingId === p.id ? (
                           <>
-                            {/* DÜZENLEME (EDIT) MODU */}
                             <td className="py-4 px-4 align-top"><img src={p.image_url} className="w-16 h-20 object-cover rounded-md border shadow-sm" /></td>
                             <td className="py-4 px-4 flex flex-col gap-3">
                               <input type="text" value={editFormData.name} onChange={e => setEditFormData({...editFormData, name: e.target.value})} className="w-full px-3 py-2 border border-blue-200 rounded font-bold focus:outline-none focus:border-blue-500" placeholder="Ürün Adı" />
@@ -450,7 +420,12 @@ export default function AdminPanel() {
                                 <input type="text" value={editFormData.sizes} onChange={e => setEditFormData({...editFormData, sizes: e.target.value})} className="flex-1 px-3 py-1 border border-blue-200 rounded text-xs" placeholder="Bedenler (Örn: S, M, L)" />
                               </div>
                             </td>
-                            <td className="py-4 px-4 align-top"><input type="number" value={editFormData.price} onChange={e => setEditFormData({...editFormData, price: e.target.value})} className="w-24 px-3 py-2 border border-blue-200 rounded font-black text-[#db2777] focus:outline-none focus:border-blue-500" /></td>
+                            <td className="py-4 px-4 align-top">
+                              <div className="relative w-28">
+                                <span className="absolute left-3 top-2 text-neutral-400 font-bold text-xs">₺</span>
+                                <input type="text" value={editFormData.price} onChange={e => setEditFormData({...editFormData, price: e.target.value})} className="w-full pl-7 pr-3 py-2 border border-blue-200 rounded font-black text-[#db2777] focus:outline-none focus:border-blue-500" placeholder="3.999" />
+                              </div>
+                            </td>
                             <td className="py-4 px-4 align-top">
                               <div className="flex flex-col gap-2">
                                 <button onClick={() => handleUpdateProduct(p.id)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded text-xs font-bold transition shadow-sm">KAYDET</button>
@@ -460,7 +435,6 @@ export default function AdminPanel() {
                           </>
                         ) : (
                           <>
-                            {/* NORMAL LİSTELEME MODU */}
                             <td className="py-4 px-4">
                               <div className="relative w-16 h-20">
                                 <img src={p.image_url} className="w-full h-full object-cover rounded border border-neutral-200 shadow-sm" />
@@ -492,7 +466,6 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* LOGLAR VE SİPARİŞLER (Öncekiyle aynı kaldı) */}
         {activeTab === 'logs' && (
           <div className="bg-white p-4 md:p-8 rounded-xl shadow-sm border border-neutral-100">
             <h2 className="text-2xl font-bold mb-6">Sistem Logları</h2>
