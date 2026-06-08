@@ -658,7 +658,7 @@ export default function Home() {
             <div className="flex justify-between items-end mb-6 border-b border-neutral-200 pb-2">
               <div>
                 <h2 className="text-2xl font-black text-neutral-900 tracking-tight">ALT GİYİM</h2>
-                <p className="text-xs text-neutral-500 font-medium mt-1">Pantolon, Etek, Şort ve Klasik Kesimler</p>
+                <p className="text-xs text-neutral-500 font-medium mt-1">Pantolon, bluz, bol paça ve Klasik Kesimler</p>
               </div>
               <button onClick={() => setActiveCategory('ALT GİYİM')} className="text-xs font-bold text-[#db2777] hover:underline uppercase tracking-wider">Tümünü Gör</button>
             </div>
